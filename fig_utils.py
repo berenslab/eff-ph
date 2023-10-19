@@ -1,4 +1,4 @@
-from utils import dist_kwargs_to_str, get_path
+from io_utils import dist_kwargs_to_str
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm

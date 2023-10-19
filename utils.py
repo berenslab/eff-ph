@@ -39,21 +39,6 @@ def hex_to_rgba(h):
     return tuple(int(h[i:i + 2], 16) / 255. for i in (0, 2, 4)) + (1.0,)
 
 
-def dist_kwargs_to_str(distance_dict):
-    # transform a dictionary of distance kwargs to a string
-    return ''.join(['_'+key+'_'+str(distance_dict[key]) for key in distance_dict])
-
-
-def split_dist_str(dist_str):
-    # splits a string and inserts line breaks for better readability
-    dist_str = dist_str.split("_")
-    if len(dist_str) > 8:
-        dist_str.insert(7, "\n")
-        dist_str.insert(13, "\n")
-    dist_str = "_".join(dist_str)
-    return dist_str
-
-
 def filter_dtm_dists(outlier_scores):
     # delete all but the best run for dtm for each p_radius
     for p_radius in [1, 2, np.inf]:

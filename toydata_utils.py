@@ -93,6 +93,47 @@ def get_torus(n, r=1.0, R=2.0, seed=0, uniform=True):
     return np.stack([x, y, z], axis=1)
 
 
+
+def invert_torus(p, r=1.0, R=2.0):
+    # Returns parametrization values of a point on a torus of major radius R and minor radius r centered at the origin.
+    # Assumes parametrization theta, phi in [0, 2pi)
+    # x = (R + r*np.cos(theta))*np.cos(phi)
+    # y = (R + r*np.cos(theta))*np.sin(phi)
+    # z = r*np.sin(theta)
+    # phi is angle of large circle, theta is angle of small circle
+    # assumes r < R
+
+    # we need to make case distinctions because the output ranges of arccos and arcsin are not [0, 2pi)
+
+    x, y, z = p.T
+
+    norm_xy = np.sqrt(x ** 2 + y ** 2)
+
+    theta = np.zeros(len(x))
+
+    # get correct theta
+    mask1 = norm_xy < R
+    theta[mask1] = np.pi - np.arcsin(z[mask1] / r)
+
+    mask2 = ~mask1 * (z >= 0)
+    theta[mask2] = np.arcsin(z[mask2] / r)
+
+    mask3 = ~mask1 * (z < 0)
+    theta[mask3] = 2 * np.pi + np.arcsin(z[mask3] / r)
+
+    # sanity check
+    assert np.all(mask1 + mask2 + mask3)
+
+    # get correct phi
+    phi = np.zeros(len(x))
+    mask4 = y >= 0
+    phi[mask4] = np.arccos(x[mask4] / (R + r * np.cos(theta[mask4])))
+    mask5 = ~mask4
+    phi[mask5] = 2 * np.pi - np.arccos(x[mask5] / (R + r * np.cos(theta[mask5])))
+
+    return phi, theta
+
+
 def get_sphere(n=1000, r=1.0, d=3, seed=0):
     """
     Creates n points on a (d-1)-sphere with radius r centered at (0, 0, 0).
