@@ -7,7 +7,7 @@ Changing the dataset in the top of the script allows to compute the persistent h
 python compute_ph.py
 ```
 
-<img width="600" alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.pdf">
+<img width="600" alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
 
 
 Create the figures of the paper with the various `fig_*.ipynb` notebooks. The notebooks create the following figures:
