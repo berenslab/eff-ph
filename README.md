@@ -6,6 +6,7 @@ Repository accompanying the paper "Persistent homology for high-dimensional data
 Compute the persistent homology of a toy dataset with `compute_ph.py` and that of a single-cell dataset with `compute_ph_real_data.py`.
 Changing the dataset in the top of the script allows to compute the persistent homology of different datasets.
 ```
+cd scripts
 python compute_ph.py
 ```
 
