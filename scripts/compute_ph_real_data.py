@@ -10,6 +10,13 @@ import numpy as np
 # Hyperparameters
 #####################################################################
 
+# dataset to use, must be one of 'mca_ss2', 'pallium_scVI_IPC_small', 'neurosphere_gopca_small',
+# 'hippocampus_gopca_small', 'HeLa2_gopca', or 'pancreas_gopca'
+dataset = "mca_ss2"
+
+use_correlation = False  # whether to use correlation distance as input distance (True only for malaria dataset)
+
+
 distances = {
     "euclidean": [{}],
     "fermat": [
@@ -83,13 +90,9 @@ distances = {
     ],
 }
 
-use_correlation = False  # whether to use correlation distance as input distance (True only for malaria dataset)
 
 seeds = [0, 1, 2]
 
-# dataset to use, must be one of 'mca_ss2', 'pallium_scVI_IPC_small', 'neurosphere_gopca_small',
-# 'hippocampus_gopca_small', 'HeLa2_gopca', or 'pancreas_gopca'
-dataset = "mca_ss2"
 
 max_dim = 1  # maximum homology dimension to compute
 k = 15  # needed for sknn graph in load_dataset. Not actually used.

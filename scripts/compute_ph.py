@@ -8,6 +8,10 @@ import os
 # Hyperparameters
 #####################################################################
 
+dataset = "toy_circle"  # must be one of toy_circle, toy_sphere, torus, eyeglasses, inter_circles, toy_blob, two_rings
+d = 2  # ambient dimension
+max_dim = 1  # dimension of highest dimensional topological features computed
+
 sigmas = np.linspace(0.0, 0.35, 29)
 sigmas = np.array([np.format_float_positional(sigma, precision=4, unique=True, trim='0') for sigma in sigmas]).astype(float)
 
@@ -87,10 +91,7 @@ distances = {
 seeds = [0, 1, 2]
 
 n = 1000
-dataset = "toy_circle"
 
-d = 2  # ambient dimension
-max_dim = 1  # dimension of highest dimensional topological features computed
 #####################################################################
 
 root_path = get_path("../data")
