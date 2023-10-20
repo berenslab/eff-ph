@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import lsqr
 import copy
-from toydata_utils import get_torus, invert_torus, get_eyeglasses_order
+from utils.toydata_utils import get_torus, invert_torus, get_eyeglasses_order
 
 
 #####################################################################

@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
-from vis_utils.utils import kNN_dists, kNN_graph
 import scipy.sparse as sp
 import scipy.linalg
 from umap.umap_ import fuzzy_simplicial_set, UMAP
@@ -9,7 +8,7 @@ from openTSNE.nearest_neighbors import KNNIndex
 import os
 import pickle
 from sklearn.decomposition import PCA
-from vis_utils.utils import load_dict, save_dict
+from vis_utils.utils import load_dict, save_dict, kNN_dists, kNN_graph
 from vis_utils.tsne_wrapper import TSNEwrapper
 
 

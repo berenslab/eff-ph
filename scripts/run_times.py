@@ -1,9 +1,8 @@
 # measure run times on the Toy circle for various methods, feature dimensions, and sample sizes
 # inspect results with run_times.ipynb
+from utils.utils import measure_run_time, get_path
 
-from utils import measure_run_time, get_path
-
-root_path = get_path("data")
+root_path = get_path("../data")
 
 seeds = [0, 1, 2]
 

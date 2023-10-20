@@ -1,14 +1,13 @@
 Repository accompanying the paper "Persistent homology for high-dimensional data based on spectral methods"
 
+<img width="600" alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
+
 ## Usage
 Compute the persistent homology of a toy dataset with `compute_ph.py` and that of a single-cell dataset with `compute_ph_real_data.py`.
 Changing the dataset in the top of the script allows to compute the persistent homology of different datasets.
 ```
 python compute_ph.py
 ```
-
-<img width="600" alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
-
 
 Create the figures of the paper with the various `fig_*.ipynb` notebooks. The notebooks create the following figures:
 - Figure 1: `fig_1.ipynb`
@@ -50,6 +49,12 @@ Install specific `umap-learn` commit
 git clone https://github.com/lmcinnes/umap.git
 cd umap 
 git git reset --hard a7606f2
+python setup.py install
+```
+
+Install the utils:
+```
+cd ../eff-ph
 python setup.py install
 ```
 
