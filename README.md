@@ -1,3 +1,4 @@
+# Persistent homology for high-dimensional data based on spectral methods
 Repository accompanying the paper "Persistent homology for high-dimensional data based on spectral methods"
 
 <img width="600" alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
@@ -36,21 +37,7 @@ git clone https://github.com/berenslab/eff-ph.git
 Create a conda python environment
 ```
 cd eff-ph
-conda create -f environment.yml
-```
-
-Install scanpy without dependencies (as we need specific UMAP version below)
-```
-conda activate eff-ph
-conda install -c conda-forge scanpy --no-deps
-``` 
-
-Install specific `umap-learn` commit
-```
-git clone https://github.com/lmcinnes/umap.git
-cd umap 
-git git reset --hard a7606f2
-python setup.py install
+conda env create -f environment.yml
 ```
 
 Install the utils:
@@ -62,7 +49,7 @@ python setup.py install
 Clone the repository `ripser` and compile it:
 ```
 cd ..
-git clone git clone -b representative-cycles https://github.com/Ripser/ripser.git
+git clone -b representative-cycles https://github.com/Ripser/ripser.git
 cd risper
 make
 ``` 
