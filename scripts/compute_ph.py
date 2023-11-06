@@ -94,7 +94,7 @@ n = 1000
 
 #####################################################################
 
-root_path = get_path("../data")
+root_path = get_path("data")
 
 for seed in seeds:
     for sigma in sigmas:
