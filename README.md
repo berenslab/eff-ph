@@ -1,7 +1,7 @@
 # Persistent homology for high-dimensional data based on spectral methods
 Repository accompanying the paper "Persistent homology for high-dimensional data based on spectral methods"
 
-<p align="center"> <img alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png"><\p>
+<p align="center"> <img alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
 
 ## Usage
 Compute the persistent homology of a toy dataset with `compute_ph.py` and that of a single-cell dataset with `compute_ph_real_data.py`.
