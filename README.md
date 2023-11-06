@@ -58,7 +58,7 @@ make
 Clone the repository `vis_utils`
 ```
 cd ..
-git clone https://github.com/sdamrich/vis_utils.git
+git clone https://github.com/sdamrich/vis_utils.git --branch eff-ph-arxiv-v1 --single-branch
 ```
 
 Create the conda R environment (for loading some single-cell datasets)
