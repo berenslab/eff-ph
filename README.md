@@ -1,5 +1,5 @@
 # Persistent homology for high-dimensional data based on spectral methods
-Repository accompanying the paper "Persistent homology for high-dimensional data based on spectral methods"
+Repository accompanying the paper [Persistent homology for high-dimensional data based on spectral methods](https://arxiv.org/abs/2311.03087)
 
 <p align="center"> <img alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
 
