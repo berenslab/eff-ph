@@ -483,7 +483,7 @@ def outlier_score(dgm, n_features=1, return_mean=False):
 def compute_outlier_scores_recursive(dgms, dim=1, n_features=2, **kwargs):
     # wrapper for recursively computing outlier scores. Puts all levels of the hierarchy into a single array, but
     # preserves the hierarchy levels by as dimension order.
-    if "dgm" in dgms:
+    if "dgms" in dgms:
         return outlier_score(dgms["dgms"][dim], n_features=n_features, **kwargs)
     else:
         return [compute_outlier_scores_recursive(dgms[key], dim=dim, n_features=n_features,
