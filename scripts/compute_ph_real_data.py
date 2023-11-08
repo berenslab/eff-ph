@@ -108,7 +108,7 @@ if use_correlation:
             dist_kwargs["input_distance"] = "correlation"
 
 
-root_path = get_path("../data")
+root_path = get_path("data")
 
 
 for seed in seeds:
