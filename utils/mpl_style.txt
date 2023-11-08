@@ -41,7 +41,7 @@ ytick.labelsize: 6
 #### * LEGEND *
 legend.fancybox : True
 legend.fontsize: 6
-legend.frameon: True
+legend.frameon: False
 
 
 #### * FIGURE *
