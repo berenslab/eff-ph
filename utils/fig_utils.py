@@ -1,4 +1,5 @@
 from io_utils import dist_kwargs_to_str
+from pd_utils import get_life_times
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
@@ -14,6 +15,12 @@ import os
 full_dist_to_print = {
     "euclidean": "Euclidean",
     "correlation": "Correlation",
+    "minkowski_p_1": r"$\ell_1$",
+    "minkowski_p_2": r"$\ell_2$",
+    "minkowski_p_3": r"$\ell_3$",
+    "minkowski_p_5": r"$\ell_5$",
+    "minkowski_p_7": r"$\ell_7$",
+    "minkowski_p_inf": r"$\ell_{\infty}$",
     "fermat_p_2": "Fermat $p=2$",
     "fermat_p_3": "Fermat $p=3$",
     "fermat_p_5": "Fermat $p=5$",
@@ -22,6 +29,7 @@ full_dist_to_print = {
     "dtm_k_4_p_dtm_2_p_radius_inf": r"DTM $k=4, p=2, \xi=\infty$",
     "dtm_k_4_p_dtm_inf_p_radius_2": r"DTM $k=4, p=\infty, \xi=2$",
     "dtm_k_4_p_dtm_2_p_radius_1": r"DTM $k=4, p=2, \xi=1$",
+    "dtm_k_4_p_dtm_inf_p_radius_1": r"DTM $k=4, p=\infty, \xi=1$",
     "dtm_k_4_p_dtm_inf_p_radius_inf": r"DTM $k=4, p=\infty, \xi=\infty$",
     "dtm_k_15_p_dtm_2_p_radius_2": r"DTM $k=15, p=2, \xi=2$",
     "dtm_k_15_p_dtm_inf_p_radius_1": r"DTM $k=15, p=\infty, \xi=1$",
@@ -47,6 +55,15 @@ full_dist_to_print = {
     "umap_embd_k_15_n_epochs_750_min_dist_0.1_metric_euclidean": "UMAP $k=15$",
     "umap_embd_k_100_n_epochs_750_min_dist_0.1_metric_euclidean": "UMAP $k=100$",
     "umap_embd_k_999_n_epochs_750_min_dist_0.1_metric_euclidean": "UMAP $k=999$",
+    "umap_embd_k_15_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_3": r"UMAP $k=15, \tilde{d}=3$",
+    "umap_embd_k_100_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_3": r"UMAP $k=100, \tilde{d}=3$",
+    "umap_embd_k_999_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_3": r"UMAP $k=999, \tilde{d}=3$",
+    "umap_embd_k_15_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_5": r"UMAP $k=15, \tilde{d}=5$",
+    "umap_embd_k_100_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_5": r"UMAP $k=100, \tilde{d}=5$",
+    "umap_embd_k_999_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_5": r"UMAP $k=999, \tilde{d}=5$",
+    "umap_embd_k_15_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_10": r"UMAP $k=15, \tilde{d}=10$",
+    "umap_embd_k_100_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_10": r"UMAP $k=100, \tilde{d}=10$",
+    "umap_embd_k_999_n_epochs_750_min_dist_0.1_metric_euclidean_vis_dim_10": r"UMAP $k=999, \tilde{d}=10$",
     "eff_res_corrected_True_weighted_False_k_4_disconnect_True": "Effective\resistance $k=4$",
     "eff_res_corrected_True_weighted_False_k_15_disconnect_True": "Effective\nresistance $k=15$",
     "eff_res_corrected_True_weighted_False_k_100_disconnect_True": "Effective\nresistance $k=100$",
@@ -65,11 +82,11 @@ full_dist_to_print = {
     "diffusion_k_15_t_32_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=32$",
     "diffusion_k_15_t_64_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=64$",
     "diffusion_k_15_t_128_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=128$",
-    "spectral_k_15_normalization_sym_n_evecs_2_weighted_False": "Lap. Eig. $k=15, d=2$, sym",
-    "spectral_k_15_normalization_sym_n_evecs_10_weighted_False": "Lap. Eig. $k=15, d=10$, sym",
-    "spectral_k_15_normalization_none_n_evecs_2_weighted_False": "Lap. Eig. $k=15, d=2$",
-    "spectral_k_15_normalization_none_n_evecs_5_weighted_False": "Lap. Eig. $k=15, d=5$",
-    "spectral_k_15_normalization_none_n_evecs_10_weighted_False": "Lap. Eig. $k=15, d=10$",
+    "spectral_k_15_normalization_sym_n_evecs_2_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=2$, sym",
+    "spectral_k_15_normalization_sym_n_evecs_10_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=10$, sym",
+    "spectral_k_15_normalization_none_n_evecs_2_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=2$",
+    "spectral_k_15_normalization_none_n_evecs_5_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=5$",
+    "spectral_k_15_normalization_none_n_evecs_10_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=10$",
 }
 
 # print names for the datasets
@@ -113,15 +130,23 @@ dist_to_print = {
 # colors, order of method in all_distances affects which colors they get
 all_distances = {
     "euclidean": [{}],
+    #"minkowski": [
+    #    {"p": 1},
+    #    {"p": 2},
+    #    {"p": 3},
+    #    {"p": 5},
+    #    {"p": 7},
+    #    {"p": np.inf}
+    #],
     "umap": [
         {"k": 100, "use_rho": True, "include_self": True},
         {"k": 999, "use_rho": True, "include_self": True},
     ],
     "fermat": [
-               {"p": 2},
-               {"p": 3},
-               {"p": 5},
-               {"p": 7}
+        {"p": 7},
+        {"p": 5},
+        {"p": 3},
+        {"p": 2},
                ],
     "dtm": [
 
@@ -131,6 +156,7 @@ all_distances = {
             {"k": 100, "p_dtm": np.inf, "p_radius": 1},
             {"k": 4, "p_dtm": 2, "p_radius": 2},
             {"k": 4, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 4, "p_dtm": np.inf, "p_radius": 1},
             {"k": 15, "p_dtm": 2, "p_radius": 2},
             {"k": 15, "p_dtm": np.inf, "p_radius": 2},
             {"k": 100, "p_dtm": 2, "p_radius": 2},
@@ -168,16 +194,18 @@ all_distances = {
         {"k": 15, "normalization": "none", "n_evecs": 5, "weighted": False},
         {"k": 15, "normalization": "none", "n_evecs": 10, "weighted": False},
     ],
-    "tsne_embd": [
-        {"perplexity": 8, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
-        {"perplexity": 30, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
-        {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
-    ],
+
     "umap_embd": [
         {"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
         {"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
         {"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
     ],
+    "tsne_embd": [
+        {"perplexity": 8, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
+        {"perplexity": 30, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
+        {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
+    ],
+
 
 }
 
@@ -401,7 +429,8 @@ def plot_dgm_loops(res,
                    s=1,
                    existing_colors=None,
                    confidence=None,
-                   ax=None):
+                   ax=None,
+                   linewidth=2):
     """
     Plot the persistence diagram and the most persistent loops.
     :param res: ripser result dict
@@ -464,7 +493,7 @@ def plot_dgm_loops(res,
     # create color palette, but avoid the colors used in the persistence diagram
     tab10 = matplotlib.cm.get_cmap("tab10")
     if plot_only is None:
-        plot_only = list(res["dmgs"].keys())
+        plot_only = list(res["dgms"].keys())
     existing_colors = existing_colors + [tab10(i) for i in plot_only]
     colors = glasbey.extend_palette(existing_colors, n_loops+len(existing_colors)+2)[len(existing_colors)+1:]
 
@@ -497,7 +526,8 @@ def plot_dgm_loops(res,
         plot_edges_on_scatter(ax=cax,
                              edge_idx=res["cycles"][1][loop_id],
                              x=embd,
-                             color=colors[i])
+                             color=colors[i],
+                              linewidth=linewidth)
 
     if fig_created:
         return fig, ax
@@ -512,12 +542,12 @@ def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, **kwargs):
                                   x[edge_idx[:, 1].astype(int)]]),
                         0, 1)
     if x.shape[1] == 2:
-        lc = mc.LineCollection(edges, color=color, linewidths=linewidth, zorder=6, **kwargs)
+        lc = mc.LineCollection(edges, color=color, linewidths=linewidth, zorder=10, **kwargs)
         lc.set_joinstyle("round")
         lc.set_capstyle("round")
         ax.add_collection(lc)
     elif x.shape[1] == 3:
-        lc = Line3DCollection(edges, color=color, linewidths=linewidth, zorder=6, **kwargs)
+        lc = Line3DCollection(edges, color=color, linewidths=linewidth, zorder=10, **kwargs)
         lc.set_joinstyle("round")
         lc.set_capstyle("round")
         ax.add_collection3d(lc)
@@ -527,5 +557,41 @@ def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, **kwargs):
         raise ValueError("Can only plot 2D and 3D embeddings.")
     return ax
 
+
+def find_best_full_dist_by_auc(outlier_scores, match_string=None):
+    # find best submethod, which a given as the first level of the hierarchy
+    shape = outlier_scores[list(outlier_scores.keys())[0]].shape[:-2]
+    length = np.array([len(key) for key in outlier_scores.keys()]).max()  # get length of longest full dist
+    best_auc = np.zeros(shape=shape)
+    best_full_dist = np.empty(shape=shape, dtype=f"<U{length}")
+
+    for full_dist in outlier_scores.keys():
+        if match_string is not None:
+            if match_string not in full_dist:
+                continue
+        auc = outlier_scores[full_dist].mean(-1).mean(-1)  # mean over seeds and sigmas
+        idx = np.where(auc > best_auc)
+        best_full_dist[idx] = full_dist
+        best_auc[idx] = auc[idx]
+    return best_full_dist
+
+
+def find_best_full_dists_by_auc(outlier_scores, distance=None, distance_level=None, match_string=None):
+    assert (distance is not None) + (
+                distance_level is not None) == 1, "Exacltly one of 'distance' and 'distance_level' must not be None."
+
+    if distance is None:
+        if distance_level > 0:
+            return {key: find_best_full_dists_by_auc(outlier_scores[key], distance_level=distance_level - 1,
+                                                     match_string=match_string) for key in outlier_scores.keys()}
+        else:
+            return {key: find_best_full_dists_by_auc(outlier_scores, distance=key, match_string=match_string) for key in
+                    outlier_scores.keys()}
+
+    assert isinstance(outlier_scores, dict), print(type(outlier_scores))
+    if distance in outlier_scores.keys():
+        return find_best_full_dist_by_auc(outlier_scores[distance], match_string)
+    else:
+        return {key: find_best_full_dists_by_auc(outlier_scores[key]) for key in outlier_scores.keys()}
 
 
