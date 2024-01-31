@@ -509,9 +509,10 @@ def get_outlier_scores_best_auc(all_res, dim=1, n_features=1):
         outlier_scores[dist] = {}
         auc[dist] = {}
         for full_dist in all_res[dist]:
-            outlier_scores[dist][full_dist] = compute_outlier_scores_recursive(dgms=all_res[dist][full_dist],
+            outlier_scores[dist][full_dist] = np.array(compute_outlier_scores_recursive(dgms=all_res[dist][full_dist],
                                                                                dim=dim,
-                                                                               n_features=n_features)
+                                                                               n_features=n_features))
+
             auc[dist][full_dist] = outlier_scores[dist][full_dist].mean()
     best_aucs = {}
     for dist in all_res:
