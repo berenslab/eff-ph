@@ -83,7 +83,7 @@ def read_ripser_result(file_name):
     return {"dgms": dgms, "cycles": cycles}
 
 
-def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_path):
+def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_path, n_outliers=0, bounding_box=True, rforsigma=None):
     # load a single experiment
     if isinstance(distance_kwargs, dict):
         dist_str = distance + dist_kwargs_to_str(distance_kwargs)
@@ -92,10 +92,20 @@ def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_
     n_str = f"{n}_" if n is not None else ""
     d_str = f"d_{d}_" if d is not None else ""
     sigma_str = f"ortho_gauss_sigma_{sigma}_" if sigma is not None else ""
+    if n_outliers > 0:
+        outlier_str = f"outliers_{n_outliers}_"
+        if rforsigma is None:
+            if not bounding_box:
+                outlier_str = outlier_str + "bounding_box_False_"
+        else:
+            outlier_str = outlier_str + f"rforsigma_{rforsigma}_"
+    else:
+        outlier_str = ""
 
     file_name = os.path.join(root_path,
                              dataset,
-                             f"{dataset}_{n_str}{d_str}{sigma_str}seed_{seed}_{dist_str}_rep")
+                             f"{dataset}_{n_str}{d_str}{sigma_str}{outlier_str}seed_{seed}_{dist_str}_rep")
+
     try:
         res = read_ripser_result(file_name)
         return res
@@ -112,11 +122,12 @@ def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_
     return res
 
 
-def load_all_sigma_res(sigma, dataset, n, embd_dim, distance, distance_kwargs,  seeds, root_path):
+def load_all_sigma_res(sigma, dataset, n, embd_dim, distance, distance_kwargs,  seeds, root_path, n_outliers=0, bounding_box=True, rforsigma=None):
     # loop over all seeds and load the corresponding results
+
     res_sigma = {}
     for seed in seeds:
-        res = load_single_res(dataset, n, embd_dim, distance, distance_kwargs, sigma, seed, root_path)
+        res = load_single_res(dataset, n, embd_dim, distance, distance_kwargs, sigma, seed, root_path, n_outliers, bounding_box=bounding_box, rforsigma=rforsigma)
         res_sigma[seed] = res
 
     if len(seeds) > 1:
@@ -125,7 +136,17 @@ def load_all_sigma_res(sigma, dataset, n, embd_dim, distance, distance_kwargs,  
         return sigma, res_sigma[seeds[0]]
 
 
-def load_multiple_res(datasets, distances, root_path, n=None, embd_dims=None, sigmas=None, seeds=None, n_threads=10):
+def load_multiple_res(datasets,
+                      distances,
+                      root_path,
+                      n=None,
+                      embd_dims=None,
+                      sigmas=None,
+                      seeds=None,
+                      n_threads=10,
+                      nbs_outliers=0,
+                      bounding_box=True,
+                      rforsigma=None,):
     """
     Loads multiple experiments. If an argument is a list, it will be iterated over. If it is not a list, it will be used
      for all experiments and the corresponding level in the output dictionaries hierarchy will be flattended.
@@ -155,6 +176,9 @@ def load_multiple_res(datasets, distances, root_path, n=None, embd_dims=None, si
     if not (isinstance(seeds, list) or isinstance(seeds, np.ndarray)):
         seeds = [seeds]
 
+    if not isinstance(nbs_outliers, list) or isinstance(nbs_outliers, np.ndarray):
+        nbs_outliers = [nbs_outliers]
+
     # loop over everything and load results
     all_res = {}
     for dataset in datasets:
@@ -170,40 +194,52 @@ def load_multiple_res(datasets, distances, root_path, n=None, embd_dims=None, si
                         dist_str = distance + dist_kwargs_to_str(dist_kwargs)
                     else:
                         dist_str = dist_kwargs
+                    res_dist_kwargs = {}
+                    for n_outliers in nbs_outliers:
+                        # if only one thread is used, continue looping over sigmas and seeds in the same thread,
+                        # otherwise start a threadpool
+                        if n_threads == 1:
+                            for sigma in sigmas:
+                                res_n_outliers = {}
+                                sigma, res_sigma = load_all_sigma_res(sigma=sigma,
+                                                                      dataset=dataset,
+                                                                      n=n,
+                                                                      embd_dim=embd_dim,
+                                                                      distance=distance,
+                                                                      distance_kwargs=dist_kwargs,
+                                                                      seeds=seeds,
+                                                                      root_path=root_path,
+                                                                      n_outliers=n_outliers,
+                                                                      bounding_box=bounding_box,
+                                                                      rforsigma=rforsigma
+                                                                      )
+                                res_n_outliers[sigma] = res_sigma
+                        else:
+                            with multiprocessing.Pool(processes=n_threads) as pool:
+                                thread_function = partial(load_all_sigma_res,
+                                                          dataset=dataset,
+                                                          n=n,
+                                                          embd_dim=embd_dim,
+                                                          distance=distance,
+                                                          distance_kwargs=dist_kwargs,
+                                                          seeds=seeds,
+                                                          root_path=root_path,
+                                                          n_outliers=n_outliers,
+                                                          bounding_box=bounding_box,
+                                                          rforsigma=rforsigma)
+                                res_n_outliers = dict(pool.map(thread_function,  sigmas))
 
-                    # if only one thread is used, continue looping over sigmas and seeds in the same thread,
-                    # otherwise start a threadpool
-                    if n_threads == 1:
-                        res_dist_kwargs = {}
-                        for sigma in sigmas:
-                            sigma, res_sigma = load_all_sigma_res(sigma,
-                                                                  dataset,
-                                                                  n,
-                                                                  embd_dim,
-                                                                  distance,
-                                                                  dist_kwargs,
-                                                                  seeds,
-                                                                  root_path
-                                                                  )
-                            res_dist_kwargs[sigma] = res_sigma
-                    else:
-                        with multiprocessing.Pool(processes=n_threads) as pool:
-                            thread_function = partial(load_all_sigma_res,
-                                                      dataset=dataset,
-                                                      n=n,
-                                                      embd_dim=embd_dim,
-                                                      distance=distance,
-                                                      distance_kwargs=dist_kwargs,
-                                                      seeds=seeds,
-                                                      root_path=root_path)
-                            res_dist_kwargs = dict(pool.map(thread_function,  sigmas))
-                    # collect results and flatten the hierarchy if there is only one value at a given level
-                    if len(sigmas) > 1:
+                        # collect results and flatten the hierarchy if there is only one value at a given level
+                        if len(sigmas) > 1:
+                            res_dist_kwargs[n_outliers] = res_n_outliers
+                        else:
+                            res_dist_kwargs[n_outliers] = res_n_outliers[sigmas[0]]
+                        print(f"Done with {dataset} {embd_dim} {dist_str} n_outliers={n_outliers}")
+
+                    if len(nbs_outliers) > 1:
                         res_distance[dist_str] = res_dist_kwargs
                     else:
-                        res_distance[dist_str] = res_dist_kwargs[sigmas[0]]
-                    print(f"Done with {dataset} {embd_dim} {dist_str}")
-
+                        res_distance[dist_str] = res_dist_kwargs[nbs_outliers[0]]
                 res_embd_dim[distance] = res_distance
             res_dataset[embd_dim] = res_embd_dim
         if len(embd_dims) > 1:
