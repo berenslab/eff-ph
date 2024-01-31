@@ -14,10 +14,22 @@ import numpy as np
 # 'hippocampus_gopca_small', 'HeLa2_gopca', or 'pancreas_gopca'
 dataset = "mca_ss2"
 
-use_correlation = False  # whether to use correlation distance as input distance (True only for malaria dataset)
+if dataset == "mca_ss2":
+    use_correlation = True  # whether to use correlation distance as input distance (True only for malaria dataset)
+else:
+    use_correlation = False
 
+seeds = [0, 1, 2]
 
 distances = {
+    #"minkowski": [
+    #    {"p": 1},
+    #    {"p": 2},
+    #    {"p": 3},
+    #    {"p": 5},
+    #    {"p": 7},
+    #    {"p": np.inf},
+    #              ]
     "euclidean": [{}],
     "fermat": [
                {"p": 1},
@@ -69,9 +81,18 @@ distances = {
         {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
     ],
     "umap_embd": [
-        {"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
-        {"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
-        {"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
+        {"k": 15, "n_epochs": 750, "min_dist": 0.1},
+        {"k": 100, "n_epochs": 750, "min_dist": 0.1},
+        {"k": 999, "n_epochs": 750, "min_dist": 0.1},
+    #     {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
+    #     {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
+    #     {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
+    #     {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
+    #     {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
+    #     {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
+    #     {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
+    #     {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
+    #     {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
     ],
     "eff_res": [
         {"corrected": True, "weighted": False, "k": 15, "disconnect": True},
@@ -89,10 +110,6 @@ distances = {
         {"k": 15, "normalization": "none", "n_evecs": 10, "weighted": False},
     ],
 }
-
-
-seeds = [0, 1, 2]
-
 
 max_dim = 1  # maximum homology dimension to compute
 k = 15  # needed for sknn graph in load_dataset. Not actually used.
