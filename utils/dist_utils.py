@@ -556,6 +556,7 @@ def get_umap_embd_dist(x,
                        input_distance="euclidean",
                        metric=None,
                        min_dist=0.1,
+                       vis_dim=2,
                        force_recompute=False):
     """
     Computes the distance between the UMAP embedding points.
@@ -582,10 +583,13 @@ def get_umap_embd_dist(x,
     knn_dists = np.concatenate([np.zeros(len(x))[:, None], knn_dists], axis=1)
 
     # comptue PCA for initialization
-    pca2 = PCA(n_components=2).fit_transform(x)
+    pca = PCA(n_components=vis_dim).fit_transform(x)
 
     # get umap embedding
-    file_name = f"umap_{dataset}_k_{k}_metric_{input_distance}_epochs_{n_epochs}_seed_{seed}_min_dist_{min_dist}_init_pca.pkl"
+    if vis_dim == 2:
+        file_name = f"umap_{dataset}_k_{k}_metric_{input_distance}_epochs_{n_epochs}_seed_{seed}_min_dist_{min_dist}_init_pca.pkl"
+    else:
+        file_name = f"umap_{dataset}_k_{k}_metric_{input_distance}_epochs_{n_epochs}_seed_{seed}_min_dist_{min_dist}_init_pca_vis_dim_{vis_dim}.pkl"
     recompute = force_recompute
     # try to load the embedding from file, if it exists and recomputation is not required
     if not recompute:
@@ -598,12 +602,12 @@ def get_umap_embd_dist(x,
     if recompute:
         # compute the UMAP embedding with PCA initialization
         umapper = UMAP(
-            n_components=2,
+            n_components=vis_dim,
             n_neighbors=knn_graph.shape[1],  # note that these are k actual neighbors and the node itself
             min_dist=min_dist,
             n_epochs=n_epochs,
             random_state=seed,
-            init=pca2,
+            init=pca,
             precomputed_knn=(knn_graph, knn_dists)
         )
         embd = umapper.fit_transform(X=x)
@@ -751,9 +755,9 @@ def get_dist(x=None, distance="euclidean", input_distance="euclidean", **kwargs)
     :param kwargs: key word arguments for the distance function
     :return: distance matrix
     """
-    if distance in ["euclidean", "cosine", "correlation"]:
+    if distance in ["euclidean", "cosine", "correlation", "minkowski"]:
         assert x is not None, "x must be provided for euclidean, cosine and correlation distances"
-        dist = squareform(pdist(x, metric=distance))
+        dist = squareform(pdist(x, metric=distance, **kwargs))
     elif distance == "sknn_hop":
         dist = get_sp_sknn(x, weighted=False, input_distance=input_distance, **kwargs)
     elif distance == "sknn_dist":
