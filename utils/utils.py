@@ -2,7 +2,7 @@ import numpy as np
 import subprocess
 import os
 import time
-from io_utils import read_ripser_result, write_lower_tri_dissim
+from io_utils import read_ripser_result, write_lower_tri_dissim, dist_kwargs_to_str
 from toydata_utils import get_toy_data
 from dist_utils import get_dist
 from pkg_resources import resource_stream
