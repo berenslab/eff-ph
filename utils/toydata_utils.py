@@ -240,7 +240,7 @@ def add_gaussian(x, sigma=0.1, seed=0):
     return x + np.random.normal(0, sigma, size=x.shape)
 
 
-def add_uniform(x, n_noise=100, seed=0, scale=1.0):
+def add_uniform(x, n_noise=100, seed=0, scale=1.0, bounding_box=True, r=None):
     """
     Adds uniform noise to the data from an axis aligned box around the data.
     :param x: data
@@ -249,9 +249,31 @@ def add_uniform(x, n_noise=100, seed=0, scale=1.0):
     :param scale: multiplicative factor for the size of the box relative to the spread of the data.
     :return:
     """
-    # get mins and maxs of the box
-    mins = x.min(axis=0) * scale
-    maxs = x.max(axis=0) * scale
+
+    # assumes zero-centered data
+    if r is not None:
+        assert isinstance(r, (int, float, complex)) and not isinstance(r, bool) or len(r) == x.shape[-1]
+        if isinstance(r, (int, float, complex)) and not isinstance(r, bool):
+            mins = -r * np.ones(x.shape[-1])
+            maxs = r * np.ones(x.shape[-1])
+        else:
+            mins = -r
+            maxs = r
+
+    else:
+        if bounding_box:
+            # get mins and maxs of the box
+            mins = x.min(axis=0)
+            maxs = x.max(axis=0)
+            means = (mins + maxs) / 2
+            mins = means + (mins - means) * scale
+            maxs = means + (maxs - means) * scale
+        else:
+            # get mins and maxs of the data
+            means = x.mean(axis=0)
+            l = np.abs(x-means).max()
+            mins = -l * scale + means
+            maxs = l * scale + means
     # add noise points
     np.random.seed(seed)
     noise = np.random.uniform(mins, maxs, size=(n_noise, x.shape[1]))
@@ -331,6 +353,6 @@ def get_toy_data(n, dataset, seed=0, r=1.0, d=50, **noise_kwargs):
     if "gaussian" in noise_kwargs:
         data = add_gaussian(data, seed=seed, **noise_kwargs["gaussian"])
     if "uniform" in noise_kwargs:
-        data = add_uniform(data, seed=seed, **noise_kwargs["uniform"])
+        data = add_uniform(data, seed=seed+2, **noise_kwargs["uniform"])  # different seed than for the data and other noise
 
     return data
