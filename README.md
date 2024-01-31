@@ -18,14 +18,26 @@ Create the figures of the paper with the various `fig_*.ipynb` notebooks. The no
 - Figure 4: `fig_circle.ipynb`
 - Figure 5: `fig_datasets.ipynb`
 - Figure 6: `fig_dims.ipynb`
-- Figure 7: `fig_spectral.ipynb`
+- Figure 7: `fig_real_data.ipynb`
 - Figure 8: `fig_real_data.ipynb`
-- Figure 9: `fig_real_data.ipynb`
-- Figure S1: `fig_toy_datasets.ipynb`
-- Figure S2: `fig_sc_datasets.ipynb`
-- Figure S3: `fig_circle.ipynb`
-- Figures S4-S12: `fig_all_methods_on_toy.ipynb`
-- Figure S13: `fig_real_data.ipynb`
+- Figure 9: `fig_spectral.ipynb`
+- Figure S1: `fig_circle.ipynb`
+- Figure S2: `fig_circle.ipynb`
+- Figure S3: `fig_toy_datasets.ipynb`
+- Figure S4: `fig_toy_datasets.ipynb`
+- Figure S5: `fig_sc_datasets.ipynb`
+- Figure S6: `fig_outliers.ipynb`
+- Figure S7: `fig_high_dim_UMAP.ipynb`
+- Figure S8: `fig_high_dim_UMAP.ipynb`
+- Figure S9: `fig_real_data.ipynb`
+- Figure S10: `fig_circle.ipynb`
+- Figure S11: `fig_datasets.ipynb`
+- Figure S12: `fig_circle.ipynb`
+- Figures S13-S20, S22: `fig_all_methods_on_toy.ipynb`
+- Figure S21: `fig_torus_high_n.ipynb`
+- Figure S21: `fig_torus_high_n.ipynb`
+- Figure S23: `fig_real_data.ipynb`
+- Figure S24: `fig_Lp.ipynb`
 
 
 ## Installation
