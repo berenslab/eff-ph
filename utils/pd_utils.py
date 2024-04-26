@@ -376,7 +376,9 @@ def filter_diagram(res, dim=1, threshold=None, n=None, dob=None, binary=False, l
         if n < len(dgm):
             # record life time of delete points for error bound
             max_del_lt = dgm[sort_idx[n], 1] - dgm[sort_idx[n], 0]
-        mask = sort_idx[:min(n, len(dgm))]
+        #mask = sort_idx[:min(n, len(dgm))] # we want mask to be as long as cycles and indicate which to keep
+        mask = np.zeros(len(dgm), dtype=bool)
+        mask[sort_idx[:min(n, len(dgm))]] = True
 
     if dob is not None:
         # only keep features with a death / birth ratio of at least dob
