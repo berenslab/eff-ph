@@ -82,8 +82,19 @@ full_dist_to_print = {
     "diffusion_k_15_t_32_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=32$",
     "diffusion_k_15_t_64_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=64$",
     "diffusion_k_15_t_128_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=128$",
-    "spectral_k_15_normalization_sym_n_evecs_2_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=2$, sym",
-    "spectral_k_15_normalization_sym_n_evecs_10_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=10$, sym",
+    "potential_k_15_t_8_kernel_sknn_include_self_False": "Potential $k=15, t=8$",
+    "potential_k_100_t_8_kernel_sknn_include_self_False": "Potential $k=100, t=8$",
+    "potential_k_15_t_64_kernel_sknn_include_self_False": "Potential $k=15, t=64$",
+    "potential_k_100_t_64_kernel_sknn_include_self_False": "Potential $k=100, t=64$",
+    "dpt_k_15_normalization_rw_weighted_False": "DPT rw $k=15$",
+    "dpt_k_100_normalization_rw_weighted_False": "DPT rw $k=100$",
+    "dpt_k_15_normalization_sym_weighted_False": "DPT sym $k=15$",
+    "dpt_k_100_normalization_sym_weighted_False": "DPT sym $k=100$",
+    "dpt_k_15_normalization_symd_weighted_False": "DPT symd $k=15$",
+    "dpt_k_100_normalization_symd_weighted_False": "DPT symd $k=100$",
+    "spectral_k_15_normalization_sym_n_evecs_2_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=2$",
+    "spectral_k_15_normalization_sym_n_evecs_5_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=5$",
+    "spectral_k_15_normalization_sym_n_evecs_10_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=10$",
     "spectral_k_15_normalization_none_n_evecs_2_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=2$",
     "spectral_k_15_normalization_none_n_evecs_5_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=5$",
     "spectral_k_15_normalization_none_n_evecs_10_weighted_False": r"Lap. Eig. $k=15, \tilde{d}=10$",
@@ -124,6 +135,8 @@ dist_to_print = {
     "eff_res": "Eff. resist.",
     "diffusion": "Diffusion",
     "spectral": "Lap. eig.",
+    "potential": "Potential",
+    "dpt": "DPT",
 }
 
 
@@ -190,9 +203,12 @@ all_distances = {
         {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
     ],
     "spectral": [
-        {"k": 15, "normalization": "none", "n_evecs": 2, "weighted": False},
-        {"k": 15, "normalization": "none", "n_evecs": 5, "weighted": False},
-        {"k": 15, "normalization": "none", "n_evecs": 10, "weighted": False},
+        #{"k": 15, "normalization": "none", "n_evecs": 2, "weighted": False},
+        #{"k": 15, "normalization": "none", "n_evecs": 5, "weighted": False},
+        #{"k": 15, "normalization": "none", "n_evecs": 10, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
     ],
 
     "umap_embd": [
@@ -430,7 +446,10 @@ def plot_dgm_loops(res,
                    existing_colors=None,
                    confidence=None,
                    ax=None,
-                   linewidth=2):
+                   linewidth=2,
+                   style=None,
+                   plot_loops=True,
+                   ):
     """
     Plot the persistence diagram and the most persistent loops.
     :param res: ripser result dict
@@ -493,12 +512,12 @@ def plot_dgm_loops(res,
     # create color palette, but avoid the colors used in the persistence diagram
     tab10 = matplotlib.cm.get_cmap("tab10")
     if plot_only is None:
-        plot_only = list(res["dgms"].keys())
+        plot_only = np.arange(len(res["dgms"]), dtype=int)
     existing_colors = existing_colors + [tab10(i) for i in plot_only]
     colors = glasbey.extend_palette(existing_colors, n_loops+len(existing_colors)+2)[len(existing_colors)+1:]
 
     # plot persistence diagram
-    plot_diagrams(res["dgms"], show=False, ax=ax0, size=5, plot_only=plot_only)
+    plot_diagrams(res["dgms"], show=False, ax=ax0, size=5, plot_only=plot_only, colormap=style)
 
     # add confidence intervals
     if confidence is not None:
@@ -516,18 +535,19 @@ def plot_dgm_loops(res,
         i = i + 1
         cax = ax[i // n_cols, i % n_cols] if n_rows > 1 else ax[i]
 
-        # mark loop in persistence diagram
-        ax0.scatter(*res["dgms"][1][loop_id].T, c=colors[i], s=10)
-
         # plot embd points
         plot_scatter(cax, embd, y, s=s, alpha=1, cmap=cmap, scalebar=False)
 
-        # plot loop
-        plot_edges_on_scatter(ax=cax,
-                             edge_idx=res["cycles"][1][loop_id],
-                             x=embd,
-                             color=colors[i],
-                              linewidth=linewidth)
+        if plot_loops:
+            # mark loop in persistence diagram
+            ax0.scatter(*res["dgms"][1][loop_id].T, c=colors[i], s=10)
+
+            # plot loop
+            plot_edges_on_scatter(ax=cax,
+                                 edge_idx=res["cycles"][1][loop_id],
+                                 x=embd,
+                                 color=colors[i],
+                                  linewidth=linewidth)
 
     if fig_created:
         return fig, ax
@@ -535,19 +555,19 @@ def plot_dgm_loops(res,
         return ax
 
 
-def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, **kwargs):
+def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, zorder=10, **kwargs):
     # plots a set of edges on top of a scatter plot in ax. Edges are given by the label of the vertices they connect.
     # The positions of the vertices are given in x.
     edges = np.moveaxis(np.stack([x[edge_idx[:, 0].astype(int)],
                                   x[edge_idx[:, 1].astype(int)]]),
                         0, 1)
     if x.shape[1] == 2:
-        lc = mc.LineCollection(edges, color=color, linewidths=linewidth, zorder=10, **kwargs)
+        lc = mc.LineCollection(edges, color=color, linewidths=linewidth, zorder=zorder, **kwargs)
         lc.set_joinstyle("round")
         lc.set_capstyle("round")
         ax.add_collection(lc)
     elif x.shape[1] == 3:
-        lc = Line3DCollection(edges, color=color, linewidths=linewidth, zorder=10, **kwargs)
+        lc = Line3DCollection(edges, color=color, linewidths=linewidth, zorder=zorder, **kwargs)
         lc.set_joinstyle("round")
         lc.set_capstyle("round")
         ax.add_collection3d(lc)
