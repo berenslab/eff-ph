@@ -83,7 +83,19 @@ def read_ripser_result(file_name):
     return {"dgms": dgms, "cycles": cycles}
 
 
-def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_path, n_outliers=0, bounding_box=True, rforsigma=None):
+def load_single_res(dataset,
+                    n,
+                    d,
+                    distance,
+                    distance_kwargs,
+                    sigma,
+                    seed,
+                    root_path,
+                    n_outliers=0,
+                    bounding_box=True,
+                    rforsigma=None,
+                    perturbation=None,
+                    repeat=0):
     # load a single experiment
     if isinstance(distance_kwargs, dict):
         dist_str = distance + dist_kwargs_to_str(distance_kwargs)
@@ -102,9 +114,14 @@ def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_
     else:
         outlier_str = ""
 
+    if perturbation is not None:
+        perturbation_str = f"{perturbation}_{repeat}_"
+    else:
+        perturbation_str = ""
+
     file_name = os.path.join(root_path,
                              dataset,
-                             f"{dataset}_{n_str}{d_str}{sigma_str}{outlier_str}seed_{seed}_{dist_str}_rep")
+                             f"{dataset}_{n_str}{d_str}{sigma_str}{outlier_str}seed_{seed}_{perturbation_str}{dist_str}_rep")
 
     try:
         res = read_ripser_result(file_name)
@@ -122,13 +139,44 @@ def load_single_res(dataset, n, d, distance, distance_kwargs, sigma, seed, root_
     return res
 
 
-def load_all_sigma_res(sigma, dataset, n, embd_dim, distance, distance_kwargs,  seeds, root_path, n_outliers=0, bounding_box=True, rforsigma=None):
+def load_all_sigma_res(sigma,
+                       dataset,
+                       n,
+                       embd_dim,
+                       distance,
+                       distance_kwargs,
+                       seeds,
+                       root_path,
+                       n_outliers=0,
+                       bounding_box=True,
+                       rforsigma=None,
+                       perturbation=None,
+                       repeats=0):
     # loop over all seeds and load the corresponding results
-
     res_sigma = {}
     for seed in seeds:
-        res = load_single_res(dataset, n, embd_dim, distance, distance_kwargs, sigma, seed, root_path, n_outliers, bounding_box=bounding_box, rforsigma=rforsigma)
-        res_sigma[seed] = res
+        res_seed = {}
+
+        for repeat in range(max(repeats, 1)):
+            res = load_single_res(dataset,
+                                  n,
+                                  embd_dim,
+                                  distance,
+                                  distance_kwargs,
+                                  sigma,
+                                  seed,
+                                  root_path,
+                                  n_outliers,
+                                  bounding_box=bounding_box,
+                                  rforsigma=rforsigma,
+                                  perturbation=perturbation,
+                                  repeat=repeat)
+            res_seed[repeat] = res
+
+        if repeats > 1:
+            res_sigma[seed] = res_seed
+        else:
+            res_sigma[seed] = res_seed[0]
 
     if len(seeds) > 1:
         return sigma, res_sigma
@@ -146,7 +194,9 @@ def load_multiple_res(datasets,
                       n_threads=10,
                       nbs_outliers=0,
                       bounding_box=True,
-                      rforsigma=None,):
+                      rforsigma=None,
+                      perturbation=None,
+                      repeats=25):
     """
     Loads multiple experiments. If an argument is a list, it will be iterated over. If it is not a list, it will be used
      for all experiments and the corresponding level in the output dictionaries hierarchy will be flattended.
@@ -179,6 +229,9 @@ def load_multiple_res(datasets,
     if not isinstance(nbs_outliers, list) or isinstance(nbs_outliers, np.ndarray):
         nbs_outliers = [nbs_outliers]
 
+    if perturbation is None:
+        repeats = 1
+
     # loop over everything and load results
     all_res = {}
     for dataset in datasets:
@@ -196,11 +249,11 @@ def load_multiple_res(datasets,
                         dist_str = dist_kwargs
                     res_dist_kwargs = {}
                     for n_outliers in nbs_outliers:
+                        res_n_outliers = {}
                         # if only one thread is used, continue looping over sigmas and seeds in the same thread,
                         # otherwise start a threadpool
                         if n_threads == 1:
                             for sigma in sigmas:
-                                res_n_outliers = {}
                                 sigma, res_sigma = load_all_sigma_res(sigma=sigma,
                                                                       dataset=dataset,
                                                                       n=n,
@@ -211,7 +264,9 @@ def load_multiple_res(datasets,
                                                                       root_path=root_path,
                                                                       n_outliers=n_outliers,
                                                                       bounding_box=bounding_box,
-                                                                      rforsigma=rforsigma
+                                                                      rforsigma=rforsigma,
+                                                                      perturbation=perturbation,
+                                                                      repeats=repeats
                                                                       )
                                 res_n_outliers[sigma] = res_sigma
                         else:
@@ -226,15 +281,18 @@ def load_multiple_res(datasets,
                                                           root_path=root_path,
                                                           n_outliers=n_outliers,
                                                           bounding_box=bounding_box,
-                                                          rforsigma=rforsigma)
+                                                          rforsigma=rforsigma,
+                                                          perturbation=perturbation,
+                                                          repeats=repeats)
+                                #res_n_outliers = dict(pool.map(thread_function,  sigmas))
                                 res_n_outliers = dict(pool.map(thread_function,  sigmas))
+                            print(f"Done with {dataset} {embd_dim} {dist_str} n_outliers={n_outliers}, perturbation={perturbation}")
 
                         # collect results and flatten the hierarchy if there is only one value at a given level
                         if len(sigmas) > 1:
                             res_dist_kwargs[n_outliers] = res_n_outliers
                         else:
-                            res_dist_kwargs[n_outliers] = res_n_outliers[sigmas[0]]
-                        print(f"Done with {dataset} {embd_dim} {dist_str} n_outliers={n_outliers}")
+                            res_dist_kwargs[n_outliers] = res_n_outliers[0]
 
                     if len(nbs_outliers) > 1:
                         res_distance[dist_str] = res_dist_kwargs
