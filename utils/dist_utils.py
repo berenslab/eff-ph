@@ -64,11 +64,14 @@ def get_sknn(x, k=15, metric="euclidean"):
     knn_graph = kNN_graph(x.astype("float"),
                           k,
                           metric=metric).cpu().numpy().flatten()
+
     knn_graph = sp.coo_matrix((np.ones(len(x) * k),
                                          (np.repeat(np.arange(x.shape[0]), k),
                                           knn_graph)),
                                         shape=(len(x), len(x)))
     sknn_graph = knn_graph.maximum(knn_graph.transpose()).tocoo()
+    assert (sknn_graph - sknn_graph.transpose()).nnz == 0, "sknn graph must be symmetric"
+    assert (sknn_graph.data == 1).all(), "sknn graph must be unweighted, perhaps k > n?"
     return sknn_graph
 
 
@@ -363,6 +366,72 @@ def get_spectral_eff_res(x, k=15, corrected=False, weighted=False):
     return dist**2
 
 
+def get_spectral_dpt(x, k=15, weighted=False, normalization="sym", input_distance="euclidean", use_eff_res_decay=False):
+    """
+    Computes the diffusion pseudotime distance based on the spectral decomposition of the Laplacian
+    :param x:
+    :param k:
+    :param weighted:
+    :param normalization:
+    :return:
+    """
+
+    if normalization == "none":
+        raise NotImplementedError("DPT distance only implemented for normalized Laplacians")
+
+    # compute symmetric kNN graph
+    if weighted:
+        sknn_coo = get_distance_weighted_sknn(x, k=k, metric=input_distance)
+    else:
+        sknn_coo = get_sknn(x, k=k, metric=input_distance)
+
+    n_components, component_labels = sp.csgraph.connected_components(sknn_coo)
+
+    L = compute_laplacian(sknn_coo, normalization="sym")
+
+    eigenvalues, eigenvectors = scipy.linalg.eigh(
+                    L.toarray(),
+                )
+
+    order = np.argsort(eigenvalues)
+
+    # omitted as stationary distribution contribution is omitted, see below
+    #discarded = order[:n_components]
+    #discarded_evecs = eigenvectors[:, discarded]
+
+    order = order[n_components:]
+    eigenvectors = eigenvectors[:, order]
+    eigenvalues = eigenvalues[order]
+
+    decay = np.diag((1 - eigenvalues) / eigenvalues)
+
+    # only for testing purposes:
+    if use_eff_res_decay:
+        decay = np.diag((1 - eigenvalues) / np.sqrt(eigenvalues))
+
+    # I omit the contributions of the stationary distributions à la Eq 39b in the PAGA paper
+    if normalization == "rw":
+        # transform to evecs of RW normalized Laplacian
+        D_sqrt_inv = np.diag(sknn_coo.sum(axis=0).A.flatten() ** (-1 / 2))
+        eigenvectors = D_sqrt_inv @ eigenvectors
+        eigenvectors /= np.linalg.norm(eigenvectors, axis=0)
+    elif normalization == "symd":
+        # add the inverse square degrees, but do not normalize the eigenvectors (in contrast to normalization "rw").
+        # This should yield the closes similarity to the corrected effective resistance.
+        D_sqrt_inv = np.diag(sknn_coo.sum(axis=0).A.flatten() ** (-1 / 2))
+        eigenvectors = D_sqrt_inv @ eigenvectors
+    elif normalization == "sym":
+        pass
+    else:
+        raise NotImplementedError("only sym, symd and rw normalization implemented")
+
+    embd = eigenvectors @ decay
+
+    dist = squareform(pdist(embd))
+
+    return dist
+
+
 def get_deg_dist(x, k, weighted=False, input_distance="euclidean"):
     """
     computes degree distance on sknn graph. This is not an informative metric, but just needed for the correction of the
@@ -442,7 +511,7 @@ def get_spectral_dist(x,
     return dist
 
 
-def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean"):
+def get_diffusion_power(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean", return_D_inv=False):
     """
     computes diffusion distance on sknn graph
     :param x: data
@@ -470,10 +539,59 @@ def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_dis
     # power it for t steps
     P_t = np.linalg.matrix_power(P, t)
 
-    # The line below is the correct definition. The difference is only the last factor, which is a constant. Keeping
-    # this version for legacy reasons.
-    return squareform(pdist(P_t @ D_inv.toarray())) * np.sqrt(D_inv.sum())
-    # return squareform(pdist(P_t @ D_inv.toarray())) * np.sqrt(degrees.sum()) # correct definition
+    if return_D_inv:
+        return P_t, D_inv
+    else:
+        return P_t
+
+def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean"):
+    """
+    computes diffusion distance on sknn graph
+    :param x: data
+    :param k: number of nearest neighbors
+    :param t: diffusion time
+    :param kernel: kernel to use, must be one of "sknn", "gaussian"
+    :return: pairwise distance matrix
+    """
+
+    # get t-th power of the diffusion matrix
+    P_t, D_inv = get_diffusion_power(x=x,
+                                     k=k,
+                                     t=t,
+                                     kernel=kernel,
+                                     include_self=include_self,
+                                     input_distance=input_distance,
+                                     return_D_inv=True)
+
+    # The first line is the incorrect legacy version, the second line is the correct definition. The first line uses the
+    # full D_in instead of the square root inside the distance and multiplies the result with the root of the sum of the
+    # inverted degrees not of the degrees.
+    # return squareform(pdist(P_t @ D_inv.toarray())) * np.sqrt(D_inv.sum())
+    return squareform(pdist(P_t @ np.sqrt(D_inv.toarray()))) * np.sqrt((D_inv**(-1)).sum())  # correct definition
+
+def get_potential_dist(x, k=15, t=8, kernel="sknn", eps=1e-7, include_self=True, input_distance="euclidean"):
+    """
+    computes potential distance on sknn graph
+    :param x: data
+    :param k: number of nearest neighbors
+    :param t: diffusion time
+    :param kernel: kernel to use, must be one of "sknn", "gaussian"
+    :return: pairwise distance matrix
+    """
+    P_t = get_diffusion_power(x=x,
+                              k=k,
+                              t=t,
+                              kernel=kernel,
+                              include_self=include_self,
+                              input_distance=input_distance)
+
+    nb_zero = (P_t == 0).sum() - len(x)
+    if nb_zero > 0:
+        print(f"Warning: Diffusion matrix P^t contains a share of {np.round(nb_zero / (len(x)*(len(x)-1)), 2)} zeros off the diagonal.")
+
+    P_t = P_t + eps  # same handling of small values as in PHATE
+    potentials = -np.log(P_t)
+    return squareform(pdist(potentials))
 
 
 def get_umap_dist(x, k, input_distance="euclidean", sim_to_dist="neg_log", use_rho=False, include_self=False):
@@ -776,6 +894,10 @@ def get_dist(x=None, distance="euclidean", input_distance="euclidean", **kwargs)
         dist = get_spectral_dist(x, input_distance=input_distance, **kwargs)
     elif distance == "diffusion":
         dist = get_diffusion_dist(x, input_distance=input_distance, **kwargs)
+    elif distance == "potential":
+        dist = get_potential_dist(x, input_distance=input_distance, **kwargs)
+    elif distance == "dpt":
+        dist = get_spectral_dpt(x, input_distance=input_distance, **kwargs)
     elif distance == "umap":
         dist = get_umap_dist(x, input_distance=input_distance, **kwargs)
     elif distance == "umap_embd":
@@ -785,5 +907,5 @@ def get_dist(x=None, distance="euclidean", input_distance="euclidean", **kwargs)
     elif distance == "tsne_embd":
         dist = get_tsne_embd_dist(x, input_distance=input_distance, **kwargs)
     else:
-        raise NotImplementedError
+        raise NotImplementedError(f"Distance {distance} not implemented")
     return dist
