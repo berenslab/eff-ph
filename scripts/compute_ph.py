@@ -9,7 +9,7 @@ import os
 #####################################################################
 
 dataset = "toy_circle"  # must be one of toy_circle, toy_sphere, torus, eyeglasses, inter_circles, toy_blob, two_rings
-d = 5000  # ambient dimension
+d = 50  # ambient dimension 2, 10, 20, 30, 40, 50, 100, 200, 500, 1000, 2000, 5000
 max_dim = 1  # dimension of highest dimensional topological features computed
 
 sigmas = np.linspace(0.0, 0.35, 29)
@@ -20,94 +20,94 @@ n = 1000
 
 distances = {
     "euclidean": [{}],
-    #"fermat": [
-    #           {"p": 1},
-    #           {"p": 2},
-    #           {"p": 3},
-    #           {"p": 5},
-    #           {"p": 7}
-    #           ],
-    # "minkowski": [
-    #    {"p": 1},
-    #    {"p": 2},
-    #    {"p": 3},
-    #    {"p": 5},
-    #    {"p": 7},
-    #    {"p": np.inf}
-    # ],
-    #"dtm": [
-    #        {"k": 4, "p_dtm": 2, "p_radius": 1},
-    #        {"k": 4, "p_dtm": np.inf, "p_radius": 1},
-    #        {"k": 15, "p_dtm": 2, "p_radius": 1},
-    #        {"k": 15, "p_dtm": np.inf, "p_radius": 1},
-    #        {"k": 100, "p_dtm": 2, "p_radius": 1},
-    #        {"k": 100, "p_dtm": np.inf, "p_radius": 1},
-    #        {"k": 4, "p_dtm": 2, "p_radius": 2},
-    #        {"k": 4, "p_dtm": np.inf, "p_radius": 2},
-    #        {"k": 15, "p_dtm": 2, "p_radius": 2},
-    #        {"k": 15, "p_dtm": np.inf, "p_radius": 2},
-    #        {"k": 100, "p_dtm": 2, "p_radius": 2},
-    #        {"k": 100, "p_dtm": np.inf, "p_radius": 2},
-    #        {"k": 4, "p_dtm": 2, "p_radius": np.inf},
-    #        {"k": 4, "p_dtm": np.inf, "p_radius": np.inf},
-    #        {"k": 15, "p_dtm": 2, "p_radius": np.inf},
-    #        {"k": 15, "p_dtm": np.inf, "p_radius": np.inf},
-    #        {"k": 100, "p_dtm": 2, "p_radius": np.inf},
-    #        {"k": 100, "p_dtm": np.inf, "p_radius": np.inf},
-    #],
-    #"core": [
-    #    {"k": 15},
-    #    {"k": 100}
-    #],
-    #"sknn_dist": [
-    #    {"k": 15},
-    #    {"k": 100}
-    #],
-    #"tsne": [
-    #     {"perplexity": 30},
-    #     {"perplexity": 200},
-    #     {"perplexity": 333}
-    #],
-    #"umap": [
-    #     {"k": 100, "use_rho": True, "include_self": True},
-    #     {"k": 999, "use_rho": True, "include_self": True},
-    #],
-    #"tsne_embd": [
-    #    {"perplexity": 8, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
-    #    {"perplexity": 30, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
-    #    {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
-    #],
-    #"umap_embd": [
-        #{"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
-        #{"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
-        #{"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
-        #{"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 3},
-        #{"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 3},
-        #{"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 3},
-        #{"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 5},
-        #{"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 5},
-        #{"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 5},
-        #{"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 10},
-        #{"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 10},
-        #{"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 10},
-    #],
+    "fermat": [
+               {"p": 1},
+               {"p": 2},
+               {"p": 3},
+               {"p": 5},
+               {"p": 7}
+               ],
+     "minkowski": [
+        {"p": 1},
+        {"p": 2},
+        {"p": 3},
+        {"p": 5},
+        {"p": 7},
+        {"p": np.inf}
+     ],
+    "dtm": [
+            {"k": 4, "p_dtm": 2, "p_radius": 1},
+            {"k": 4, "p_dtm": np.inf, "p_radius": 1},
+            {"k": 15, "p_dtm": 2, "p_radius": 1},
+            {"k": 15, "p_dtm": np.inf, "p_radius": 1},
+            {"k": 100, "p_dtm": 2, "p_radius": 1},
+            {"k": 100, "p_dtm": np.inf, "p_radius": 1},
+            {"k": 4, "p_dtm": 2, "p_radius": 2},
+            {"k": 4, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 15, "p_dtm": 2, "p_radius": 2},
+            {"k": 15, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 100, "p_dtm": 2, "p_radius": 2},
+            {"k": 100, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 4, "p_dtm": 2, "p_radius": np.inf},
+            {"k": 4, "p_dtm": np.inf, "p_radius": np.inf},
+            {"k": 15, "p_dtm": 2, "p_radius": np.inf},
+            {"k": 15, "p_dtm": np.inf, "p_radius": np.inf},
+            {"k": 100, "p_dtm": 2, "p_radius": np.inf},
+            {"k": 100, "p_dtm": np.inf, "p_radius": np.inf},
+    ],
+    "core": [
+        {"k": 15},
+        {"k": 100}
+    ],
+    "sknn_dist": [
+        {"k": 15},
+        {"k": 100}
+    ],
+    "tsne": [
+         {"perplexity": 30},
+         {"perplexity": 200},
+         {"perplexity": 333}
+    ],
+    "umap": [
+         {"k": 100, "use_rho": True, "include_self": True},
+         {"k": 999, "use_rho": True, "include_self": True},
+    ],
+    "tsne_embd": [
+        {"perplexity": 8, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
+        {"perplexity": 30, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
+        {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
+    ],
+    "umap_embd": [
+       {"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
+       {"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
+       {"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean"},
+       {"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 3},
+       {"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 3},
+       {"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 3},
+       {"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 5},
+       {"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 5},
+       {"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 5},
+       {"k": 15, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 10},
+       {"k": 100, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 10},
+       {"k": 999, "n_epochs": 750, "min_dist": 0.1, "metric": "euclidean", "vis_dim": 10},
+    ],
     "eff_res": [
-        # normal settings
-        {"corrected": True, "weighted": False, "k": 15, "disconnect": True},
-        {"corrected": True, "weighted": False, "k": 100, "disconnect": True},
-        # varying k
-        #{"corrected": True, "weighted": False, "k": 4, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 30, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 45, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 60, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 75, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 90, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 105, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 120, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 135, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 150, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 300, "disconnect": True},
-        #{"corrected": True, "weighted": False, "k": 500, "disconnect": True},
+       # normal settings
+       {"corrected": True, "weighted": False, "k": 15, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 100, "disconnect": True},
+       # varying k
+       {"corrected": True, "weighted": False, "k": 4, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 30, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 45, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 60, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 75, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 90, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 105, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 120, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 135, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 150, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 300, "disconnect": True},
+       {"corrected": True, "weighted": False, "k": 500, "disconnect": True},
     ],
     "diffusion": [
         # normal settings
@@ -116,59 +116,59 @@ distances = {
         {"k": 15, "t": 64, "kernel": "sknn", "include_self": False},
         {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
         ## varying t
-        #{"k": 15, "t": 2, "kernel": "sknn", "include_self": False},
-        #{"k": 15, "t": 4, "kernel": "sknn", "include_self": False},
-        #{"k": 15, "t": 16, "kernel": "sknn", "include_self": False},
-        #{"k": 15, "t": 32, "kernel": "sknn", "include_self": False},
-        #{"k": 15, "t": 128, "kernel": "sknn", "include_self": False},
-        #{"k": 15, "t": 256, "kernel": "sknn", "include_self": False},
-        #{"k": 100, "t": 2, "kernel": "sknn", "include_self": False},
-        #{"k": 100, "t": 4, "kernel": "sknn", "include_self": False},
-        #{"k": 100, "t": 16, "kernel": "sknn", "include_self": False},
-        #{"k": 100, "t": 32, "kernel": "sknn", "include_self": False},
-        #{"k": 100, "t": 128, "kernel": "sknn", "include_self": False},
-        #{"k": 100, "t": 256, "kernel": "sknn", "include_self": False},
-        ## varying k
-        #{"k": 4, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 30, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 45, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 60, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 75, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 90, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 105, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 120, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 135, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 150, "t": 64, "kernel": "sknn", "include_self": False},
-        #{"k": 4, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 30, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 45, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 60, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 75, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 90, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 105, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 120, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 135, "t": 8, "kernel": "sknn", "include_self": False},
-        #{"k": 150, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 2, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 4, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 16, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 32, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 128, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 256, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 2, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 4, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 16, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 32, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 128, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 256, "kernel": "sknn", "include_self": False},
+        # varying k
+        {"k": 4, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 30, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 45, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 60, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 75, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 90, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 105, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 120, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 135, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 150, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 4, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 30, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 45, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 60, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 75, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 90, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 105, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 120, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 135, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 150, "t": 8, "kernel": "sknn", "include_self": False},
     ],
-    #"potential": [
-    #    {"k": 15, "t": 8, "kernel": "sknn", "include_self": False},
-    #    {"k": 100, "t": 8, "kernel": "sknn", "include_self": False},
-    #    {"k": 15, "t": 64, "kernel": "sknn", "include_self": False},
-    #    {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
-    #],
-    #"dpt": [
-        #{"k": 15, "normalization": "sym", "weighted": False},
-        #{"k": 100, "normalization": "sym", "weighted": False},
-        #{"k": 15, "normalization": "symd", "weighted": False},
-        #{"k": 100, "normalization": "symd", "weighted": False},
-        #{"k": 15, "normalization": "rw", "weighted": False},
-        #{"k": 100, "normalization": "rw", "weighted": False}
-    #]
-    #"spectral": [
-    #    {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
-    #    {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
-    #    {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
-    #],
+    "potential": [
+        {"k": 15, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
+    ],
+    "dpt": [
+       {"k": 15, "normalization": "sym", "weighted": False},
+       {"k": 100, "normalization": "sym", "weighted": False},
+       {"k": 15, "normalization": "symd", "weighted": False},
+       {"k": 100, "normalization": "symd", "weighted": False},
+       {"k": 15, "normalization": "rw", "weighted": False},
+       {"k": 100, "normalization": "rw", "weighted": False}
+    ],
+    "spectral": [
+        {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
+    ],
 }
 
 

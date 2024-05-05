@@ -9,7 +9,7 @@ import os
 #####################################################################
 
 dataset = "toy_circle"  # must be one of toy_circle, toy_sphere, torus, eyeglasses, inter_circles, toy_blob, two_rings
-d = 50  # ambient dimension
+d = 2  # ambient dimension 2 or 50
 max_dim = 1  # dimension of highest dimensional topological features computed
 
 sigmas = np.linspace(0.0, 0.35, 29)
@@ -19,7 +19,7 @@ seeds = [0, 1, 2]
 
 n = 1000
 
-n_outliers = 500
+n_outliers = 50  # 0, 50, 100, 200
 
 
 distances = {
@@ -98,9 +98,9 @@ distances = {
         {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
     ],
     #"spectral": [
-    #    {"k": 15, "normalization": "none", "n_evecs": 2, "weighted": False},
-    #    {"k": 15, "normalization": "none", "n_evecs": 5, "weighted": False},
-    #    {"k": 15, "normalization": "none", "n_evecs": 10, "weighted": False},
+    #    {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
+    #    {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
+    #    {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
     #],
 }
 

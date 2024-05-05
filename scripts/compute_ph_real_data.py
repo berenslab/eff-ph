@@ -13,8 +13,7 @@ import numpy as np
 # dataset to use, must be one of 'mca_ss2', 'pallium_scVI_IPC_small', 'neurosphere_gopca_small',
 # 'hippocampus_gopca_small', 'HeLa2_gopca', or 'pancreas_gopca'
 
-# "tasic_purple_small", "tasic_orange_small", "tasic_purple", "tasic_orange"
-dataset = "pancreas_gopca"
+dataset = "mca_ss2"
 
 if dataset == "mca_ss2":
     use_correlation = True  # whether to use correlation distance as input distance (True only for malaria dataset)
@@ -24,94 +23,79 @@ else:
 seeds = [0, 1, 2]
 
 distances = {
-    #"minkowski": [
-    #    {"p": 1},
-    #    {"p": 2},
-    #    {"p": 3},
-    #    {"p": 5},
-    #    {"p": 7},
-    #    {"p": np.inf},
-    #              ]
-    #"euclidean": [{}],
-    #"fermat": [
-    #           {"p": 1},
-    #           {"p": 2},
-    #           {"p": 3},
-    #           {"p": 5},
-    #           {"p": 7}
-    #           ],
-    #"dtm": [
-    #        {"k": 4, "p_dtm": 2, "p_radius": 1},
-    #        {"k": 4, "p_dtm": np.inf, "p_radius": 1},
-    #        {"k": 15, "p_dtm": 2, "p_radius": 1},
-    #        {"k": 15, "p_dtm": np.inf, "p_radius": 1},
-    #        {"k": 100, "p_dtm": 2, "p_radius": 1},
-    #        {"k": 100, "p_dtm": np.inf, "p_radius": 1},
-    #        {"k": 4, "p_dtm": 2, "p_radius": 2},
-    #        {"k": 4, "p_dtm": np.inf, "p_radius": 2},
-    #        {"k": 15, "p_dtm": 2, "p_radius": 2},
-    #        {"k": 15, "p_dtm": np.inf, "p_radius": 2},
-    #        {"k": 100, "p_dtm": 2, "p_radius": 2},
-    #        {"k": 100, "p_dtm": np.inf, "p_radius": 2},
-    #        {"k": 4, "p_dtm": 2, "p_radius": np.inf},
-    #        {"k": 4, "p_dtm": np.inf, "p_radius": np.inf},
-    #        {"k": 15, "p_dtm": 2, "p_radius": np.inf},
-    #        {"k": 15, "p_dtm": np.inf, "p_radius": np.inf},
-    #        {"k": 100, "p_dtm": 2, "p_radius": np.inf},
-    #        {"k": 100, "p_dtm": np.inf, "p_radius": np.inf},
-    #],
-    #"core": [
-    #    {"k": 15},
-    #    {"k": 100}
-    #],
-    #"sknn_dist": [
-    #    {"k": 15},
-    #    {"k": 100}
-    #],
-    #"tsne": [
-    #     {"perplexity": 30},
-    #     {"perplexity": 200},
-    #     {"perplexity": 333}
-    #],
-    #"umap": [
-    #     {"k": 100, "use_rho": True, "include_self": True},
-    #     {"k": 999, "use_rho": True, "include_self": True},
-    #],
-    #"tsne_embd": [
-    #    {"perplexity": 8, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
-    #    {"perplexity": 30, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
-    #    {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
-    #],
-    #"umap_embd": [
-    #    {"k": 15, "n_epochs": 750, "min_dist": 0.1},
-    #    {"k": 100, "n_epochs": 750, "min_dist": 0.1},
-    #    {"k": 999, "n_epochs": 750, "min_dist": 0.1},
-    #     {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
-    #     {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
-    #     {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
-    #     {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
-    #     {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
-    #     {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
-    #     {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
-    #     {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
-    #     {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
-    #],
-    #"eff_res": [
-    #    {"corrected": True, "weighted": False, "k": 15, "disconnect": True},
-    #    {"corrected": True, "weighted": False, "k": 100, "disconnect": True},
-    #    {"corrected": True, "weighted": False, "k": 250, "disconnect": True},
-    #    {"corrected": True, "weighted": False, "k": 500, "disconnect": True},
-    #    #{"corrected": True, "weighted": True, "k": 15, "disconnect": True},
-    #    #{"corrected": True, "weighted": True, "k": 100, "disconnect": True},
-    #    #{"corrected": True, "weighted": True, "k": 200, "disconnect": True}
-    #],
-    #"diffusion": [
-    #    {"k": 15, "t": 8, "kernel": "sknn", "include_self": False},
-    #    {"k": 100, "t": 8, "kernel": "sknn", "include_self": False},
-    #    {"k": 15, "t": 64, "kernel": "sknn", "include_self": False},
-    #    {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
-    #],
-
+    "euclidean": [{}],
+    "fermat": [
+               {"p": 2},
+               {"p": 3},
+               {"p": 5},
+               {"p": 7}
+               ],
+    "dtm": [
+            {"k": 4, "p_dtm": 2, "p_radius": 1},
+            {"k": 4, "p_dtm": np.inf, "p_radius": 1},
+            {"k": 15, "p_dtm": 2, "p_radius": 1},
+            {"k": 15, "p_dtm": np.inf, "p_radius": 1},
+            {"k": 100, "p_dtm": 2, "p_radius": 1},
+            {"k": 100, "p_dtm": np.inf, "p_radius": 1},
+            {"k": 4, "p_dtm": 2, "p_radius": 2},
+            {"k": 4, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 15, "p_dtm": 2, "p_radius": 2},
+            {"k": 15, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 100, "p_dtm": 2, "p_radius": 2},
+            {"k": 100, "p_dtm": np.inf, "p_radius": 2},
+            {"k": 4, "p_dtm": 2, "p_radius": np.inf},
+            {"k": 4, "p_dtm": np.inf, "p_radius": np.inf},
+            {"k": 15, "p_dtm": 2, "p_radius": np.inf},
+            {"k": 15, "p_dtm": np.inf, "p_radius": np.inf},
+            {"k": 100, "p_dtm": 2, "p_radius": np.inf},
+            {"k": 100, "p_dtm": np.inf, "p_radius": np.inf},
+    ],
+    "core": [
+        {"k": 15},
+        {"k": 100}
+    ],
+    "sknn_dist": [
+        {"k": 15},
+        {"k": 100}
+    ],
+    "tsne": [
+         {"perplexity": 30},
+         {"perplexity": 200},
+         {"perplexity": 333}
+    ],
+    "umap": [
+         {"k": 100, "use_rho": True, "include_self": True},
+         {"k": 999, "use_rho": True, "include_self": True},
+    ],
+    "tsne_embd": [
+        {"perplexity": 8, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
+        {"perplexity": 30, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True},
+        {"perplexity": 333, "n_epochs": 500, "n_early_epochs": 250, "rescale_tsne": True}
+    ],
+    "umap_embd": [
+        {"k": 15, "n_epochs": 750, "min_dist": 0.1},
+        {"k": 100, "n_epochs": 750, "min_dist": 0.1},
+        {"k": 999, "n_epochs": 750, "min_dist": 0.1},
+         {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
+         {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
+         {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 3},
+         {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
+         {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
+         {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 5},
+         {"k": 15, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
+         {"k": 100, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
+         {"k": 999, "n_epochs": 750, "min_dist": 0.1, "vis_dim": 10},
+    ],
+    "eff_res": [
+        {"corrected": True, "weighted": False, "k": 15, "disconnect": True},
+        {"corrected": True, "weighted": False, "k": 100, "disconnect": True},
+    ],
+    "diffusion": [
+        {"k": 15, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 8, "kernel": "sknn", "include_self": False},
+        {"k": 15, "t": 64, "kernel": "sknn", "include_self": False},
+        {"k": 100, "t": 64, "kernel": "sknn", "include_self": False},
+    ],
     "potential": [
         {"k": 15, "t": 8, "kernel": "sknn", "include_self": False},
         {"k": 100, "t": 8, "kernel": "sknn", "include_self": False},
@@ -126,11 +110,11 @@ distances = {
         {"k": 15, "normalization": "rw", "weighted": False},
         {"k": 100, "normalization": "rw", "weighted": False}
     ]
-    #"spectral": [
-    #    {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
-    #    {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
-    #    {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
-    #],
+    "spectral": [
+        {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
+        {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
+    ],
 }
 
 max_dim = 1  # maximum homology dimension to compute
