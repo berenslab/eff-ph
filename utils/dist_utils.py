@@ -283,6 +283,17 @@ def compute_effective_resistance(A, disconnect=False):
     EffR[np.isinf(EffR)] = max_EffR * 2
     return EffR
 
+def correct_eff_res(d, adj):
+    """
+    corrects the effective resistance distance matrix based à la von Luxburg
+    :param d: effective resistance distance matrix
+    :param adj: adjacency matrix as coo matrix
+    :return: corrected effective resistance distance matrix
+    """
+    degs = np.array(adj.sum(axis=1))
+    deg_dist = 1/degs + 1/degs.T
+    np.fill_diagonal(deg_dist, 0)
+    return d - deg_dist+ 2*adj.toarray() / (degs * degs.T)
 
 def get_eff_res(x, k, corrected=True, weighted=False, disconnect=False, input_distance="euclidean"):
     """
@@ -310,10 +321,7 @@ def get_eff_res(x, k, corrected=True, weighted=False, disconnect=False, input_di
 
     # optionally: correct via von Luxburg fix
     if corrected:
-        degs = np.array(sknn_coo.sum(axis=1))
-        deg_dist = 1/degs + 1/degs.T
-        np.fill_diagonal(deg_dist, 0)
-        d_eff = d_eff - deg_dist + 2*sknn_coo.toarray() / (degs * degs.T)
+        d_eff = correct_eff_res(d_eff, sknn_coo)
     return d_eff
 
 
@@ -416,8 +424,8 @@ def get_spectral_dpt(x, k=15, weighted=False, normalization="sym", input_distanc
         eigenvectors = D_sqrt_inv @ eigenvectors
         eigenvectors /= np.linalg.norm(eigenvectors, axis=0)
     elif normalization == "symd":
-        # add the inverse square degrees, but do not normalize the eigenvectors (in contrast to normalization "rw").
-        # This should yield the closes similarity to the corrected effective resistance.
+        # add the inverse squareroot degrees, but do not normalize the eigenvectors (in contrast to normalization "rw").
+        # This should yield the closest similarity to the corrected effective resistance.
         D_sqrt_inv = np.diag(sknn_coo.sum(axis=0).A.flatten() ** (-1 / 2))
         eigenvectors = D_sqrt_inv @ eigenvectors
     elif normalization == "sym":
@@ -567,7 +575,7 @@ def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_dis
     # full D_in instead of the square root inside the distance and multiplies the result with the root of the sum of the
     # inverted degrees not of the degrees.
     # return squareform(pdist(P_t @ D_inv.toarray())) * np.sqrt(D_inv.sum())
-    return squareform(pdist(P_t @ np.sqrt(D_inv.toarray()))) * np.sqrt((D_inv**(-1)).sum())  # correct definition
+    return squareform(pdist(P_t @ np.sqrt(D_inv.toarray()))) * np.sqrt((np.diag(D_inv.toarray())**(-1)).sum())  # correct definition
 
 def get_potential_dist(x, k=15, t=8, kernel="sknn", eps=1e-7, include_self=True, input_distance="euclidean"):
     """
