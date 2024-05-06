@@ -210,6 +210,11 @@ def eff_res_decay(eigenvalues):
     return decay / decay.max()
 
 
+def dpt_decay(eigenvalues):
+    decay = (1-eigenvalues) / eigenvalues
+    return decay / decay.max()
+
+
 def lap_eig_decay(eigenvalues, n_evecs=2):
     decay = np.zeros(len(eigenvalues))
     decay[:n_evecs] = 1
