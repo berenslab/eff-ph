@@ -109,7 +109,7 @@ distances = {
         {"k": 100, "normalization": "symd", "weighted": False},
         {"k": 15, "normalization": "rw", "weighted": False},
         {"k": 100, "normalization": "rw", "weighted": False}
-    ]
+    ],
     "spectral": [
         {"k": 15, "normalization": "sym", "n_evecs": 2, "weighted": False},
         {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
