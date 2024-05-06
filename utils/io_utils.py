@@ -122,7 +122,6 @@ def load_single_res(dataset,
     file_name = os.path.join(root_path,
                              dataset,
                              f"{dataset}_{n_str}{d_str}{sigma_str}{outlier_str}seed_{seed}_{perturbation_str}{dist_str}_rep")
-
     try:
         res = read_ripser_result(file_name)
         return res
@@ -286,13 +285,13 @@ def load_multiple_res(datasets,
                                                           repeats=repeats)
                                 #res_n_outliers = dict(pool.map(thread_function,  sigmas))
                                 res_n_outliers = dict(pool.map(thread_function,  sigmas))
-                            print(f"Done with {dataset} {embd_dim} {dist_str} n_outliers={n_outliers}, perturbation={perturbation}")
+                        print(f"Done with {dataset} {embd_dim} {dist_str} n_outliers={n_outliers}, perturbation={perturbation}")
 
                         # collect results and flatten the hierarchy if there is only one value at a given level
                         if len(sigmas) > 1:
                             res_dist_kwargs[n_outliers] = res_n_outliers
                         else:
-                            res_dist_kwargs[n_outliers] = res_n_outliers[0]
+                            res_dist_kwargs[n_outliers] = res_n_outliers[sigmas[0]]
 
                     if len(nbs_outliers) > 1:
                         res_distance[dist_str] = res_dist_kwargs
