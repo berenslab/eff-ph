@@ -73,7 +73,10 @@ full_dist_to_print = {
     "eff_res_corrected_False_weighted_True_k_100_disconnect_True": "Eff. res. weighted\nuncorrected $k=100$",
     "eff_res_corrected_True_weighted_False_k_15_disconnect_True_sqrt": "Eff. res. $k=15$ square root",
     "eff_res_corrected_True_weighted_False_k_100_disconnect_True_sqrt": "Eff. res. $k=100$ square root",
+    "diffusion_k_100_t_2_kernel_sknn_include_self_False": "Diffusion\n$k=100, t=2$",
+    "diffusion_k_100_t_4_kernel_sknn_include_self_False": "Diffusion\n$k=100, t=4$",
     "diffusion_k_100_t_8_kernel_sknn_include_self_False": "Diffusion\n$k=100, t=8$",
+    "diffusion_k_100_t_16_kernel_sknn_include_self_False": "Diffusion\n$k=100, t=16$",
     "diffusion_k_100_t_64_kernel_sknn_include_self_False": "Diffusion\n$k=100, t=64$",
     "diffusion_k_15_t_2_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=2$",
     "diffusion_k_15_t_4_kernel_sknn_include_self_False": "Diffusion\n$k=15, t=4$",
@@ -444,11 +447,14 @@ def plot_dgm_loops(res,
                    plot_only=None,
                    s=1,
                    existing_colors=None,
+                   colors=None,
                    confidence=None,
                    ax=None,
                    linewidth=2,
                    style=None,
                    plot_loops=True,
+                   zero_intersection=False,
+                   **kwargs_edges
                    ):
     """
     Plot the persistence diagram and the most persistent loops.
@@ -510,14 +516,21 @@ def plot_dgm_loops(res,
         fig_created = False
 
     # create color palette, but avoid the colors used in the persistence diagram
-    tab10 = matplotlib.cm.get_cmap("tab10")
-    if plot_only is None:
-        plot_only = np.arange(len(res["dgms"]), dtype=int)
-    existing_colors = existing_colors + [tab10(i) for i in plot_only]
-    colors = glasbey.extend_palette(existing_colors, n_loops+len(existing_colors)+2)[len(existing_colors)+1:]
+
+    if colors is None:
+        tab10 = matplotlib.cm.get_cmap("tab10")
+        if plot_only is None:
+            plot_only = np.arange(len(res["dgms"]), dtype=int)
+        existing_colors = existing_colors + [tab10(i) for i in plot_only]
+        colors = glasbey.extend_palette(existing_colors, n_loops+len(existing_colors)+2)[len(existing_colors)+1:]
+
 
     # plot persistence diagram
-    plot_diagrams(res["dgms"], show=False, ax=ax0, size=5, plot_only=plot_only, colormap=style)
+    plot_diagrams(res["dgms"], show=False, ax=ax0, size=5, plot_only=plot_only, colormap=style, diagonal=1-zero_intersection)
+
+    if zero_intersection:
+        assert plot_only == [1]
+        intersect_at_zero(ax0, res["dgms"][1])
 
     # add confidence intervals
     if confidence is not None:
@@ -547,7 +560,8 @@ def plot_dgm_loops(res,
                                  edge_idx=res["cycles"][1][loop_id],
                                  x=embd,
                                  color=colors[i],
-                                  linewidth=linewidth)
+                                  linewidth=linewidth,
+                                  **kwargs_edges)
 
     if fig_created:
         return fig, ax
@@ -555,7 +569,7 @@ def plot_dgm_loops(res,
         return ax
 
 
-def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, zorder=10, **kwargs):
+def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, zorder=10, elev=45, azim=-90, **kwargs):
     # plots a set of edges on top of a scatter plot in ax. Edges are given by the label of the vertices they connect.
     # The positions of the vertices are given in x.
     edges = np.moveaxis(np.stack([x[edge_idx[:, 0].astype(int)],
@@ -571,7 +585,7 @@ def plot_edges_on_scatter(ax, edge_idx, x, color="k", linewidth=2, zorder=10, **
         lc.set_joinstyle("round")
         lc.set_capstyle("round")
         ax.add_collection3d(lc)
-        ax.view_init(elev=45, azim=-90)
+        ax.view_init(elev=elev, azim=-azim)
         ax.axis("on")
     else:
         raise ValueError("Can only plot 2D and 3D embeddings.")
@@ -614,4 +628,25 @@ def find_best_full_dists_by_auc(outlier_scores, distance=None, distance_level=No
     else:
         return {key: find_best_full_dists_by_auc(outlier_scores[key]) for key in outlier_scores.keys()}
 
+
+def intersect_at_zero(ax, dgms):
+    # define bounds of diagram
+    ax_min, ax_max = np.min(dgms), np.max(dgms)
+    x_r = ax_max - ax_min
+
+    # Give plot a nice buffer on all sides.
+    # ax_range=0 when only one point,
+    buffer = x_r / 5
+    x_up = ax_max + buffer
+    x_down = 0     # set down values to zero
+
+    ax.plot([x_down, x_up], [x_down, x_up], "--", c="k", linewidth=0.5, zorder=0)
+
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
+    ax.set_aspect("equal")
+
+    ax.text(-0.01, -0.01, "0", transform=ax.transAxes, va="top", ha="right")
+
+    return ax
 
