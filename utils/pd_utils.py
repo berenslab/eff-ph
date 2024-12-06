@@ -449,6 +449,68 @@ def filter_dgms(dgms, inplace=True, **kwargs):
 # Detection score metric
 ###################################################################################
 
+def get_features_above_gap(dgm, n_gap=0):
+    """
+    Get the features above the n_gap-th largest gap in the persistence diagram
+    :param dgm: persistence diagram
+    :param n_gap: index of the gap to consider; uses 0-indexing
+    :return: filtered persistence diagram, only with features above the n_gap-th largest gap
+    """
+
+    # compute life times and indices of most persistent features
+    life_times = dgm[:, 1] - dgm[:, 0]
+
+    if n_gap >= len(life_times):
+        print("n_gap is larger than the number of features in the diagram. Returning the full diagram")
+        return dgm
+
+    idx_sorted = np.argsort(life_times)[::-1]
+    life_times_sorted = life_times[idx_sorted]
+
+    gap_sizes = life_times_sorted - np.concatenate([life_times_sorted[1:], [0]])
+
+    largest_gap_idx = np.argsort(gap_sizes)[::-1][n_gap]
+
+    return_idx = idx_sorted[:largest_gap_idx+1]
+
+    return dgm[return_idx]
+
+
+def wide_gap_score(dgm, n_gap, n_features, mode="classification"):
+    """
+    Compute whether the number of features above the n_gap-th largest gap is corerct
+    :param dgm: persistence diagram
+    :param n_gap: index of the gap to consider; uses 0-indexing
+    :param n_features: number of ground truth features
+    :param mode: Mode of comparison, "classification" just cares about the number of features above the gap being correct,
+    while "regression" also cares about how far off the number of features is.
+    :return: wide_gap_score
+    """
+
+    if len(dgm) == 0:
+        if mode == "classification":
+            return 0 == n_features
+        elif mode == "regression":
+            1 - (np.abs(0 - n_features)) / np.maximum(0, n_features)
+        else:
+            raise ValueError("Mode not recognized")
+
+    # get features above the gap
+    dgm_above_gap = get_features_above_gap(dgm, n_gap=n_gap)
+
+    # compute score
+    if mode == "classification":
+        if len(dgm_above_gap) == n_features:
+            return 1
+        else:
+            return 0
+    elif mode == "regression":
+        return 1 - (np.abs(len(dgm_above_gap) - n_features)) / np.maximum(len(dgm_above_gap), n_features)
+
+    else:
+        raise ValueError("Mode not recognized")
+
+
 def outlier_score(dgm, n_features=1, return_mean=False):
     """
     Compute the detection score of a diagram, i.e., measures the relative gap between n_features-th longest lived
@@ -480,6 +542,27 @@ def outlier_score(dgm, n_features=1, return_mean=False):
         else:
             # just show the relative life time of the last desired feature
             return (life_times[idx_persistent[0]] - life_times[idx_next]) / life_times[idx_persistent[0]]
+
+
+# todo merge this the recursive version of the outlier score
+def compute_wide_gap_scores_recursive(dgms, n_gap=0, dim=1, n_features=1, **kwargs):
+    # wrapper for recursively computing wide gap scores. Puts all levels of the hierarchy into a single array, but
+    # preserves the hierarchy levels by as dimension order.
+    if "dgms" in dgms:
+        return wide_gap_score(dgms["dgms"][dim], n_gap=n_gap, n_features=n_features, **kwargs)
+    else:
+        return [compute_wide_gap_scores_recursive(dgms[key], n_gap=n_gap, n_features=n_features,
+                                                 **kwargs) for key in dgms]
+
+
+def compute_wide_gap_scores(dgms, n_gap=0, n_features=1, dim=1, **kwargs):
+    # Wrapper for computing wide gap scores for a hierarchy of persistence diagrams. The first two levels of the
+    # hierarchy are preserved as dictionary, the remaining ones are combined into a single array.
+    wide_gap_scores = {}
+    for key1 in dgms:
+        wide_gap_scores[key1] = {key2: np.array(
+            compute_wide_gap_scores_recursive(dgms[key1][key2], n_gap=n_gap, n_features=n_features, dim=dim, **kwargs)) for key2 in dgms[key1]}
+    return wide_gap_scores
 
 
 def compute_outlier_scores_recursive(dgms, dim=1, n_features=2, **kwargs):
