@@ -1,3 +1,6 @@
 data_path data
 fig_path figures
 ripser_path ../ripser/
+ripser_image_path ../interval-matching/modified-ripser/ripser-image-persistence-simple/ripser-image
+ripser_tight_path ../interval-matching/modified-ripser/ripser-tight-representative-cycles/ripser-representatives
+interval_matching_path ../interval-matching/

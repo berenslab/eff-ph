@@ -32,6 +32,22 @@ def get_path(path_type):
             return path_dict["ripser_path"]
         except KeyError:
             print("There is no path 'ripser_path'.")
+    elif path_type == "ripser_image":
+        try:
+            return path_dict["ripser_image_path"]
+        except KeyError:
+            print("There is no path 'ripser_image_path'.")
+    elif path_type == "ripser_tight":
+        try:
+            return path_dict["ripser_tight_path"]
+        except KeyError:
+            print("There is no path 'ripser_tight_path'.")
+    elif path_type == "interval_matching":
+        try:
+            return path_dict["interval_matching_path"]
+        except KeyError:
+            print("There is no path 'interval_matching_path'.")
+
 
 
 def hex_to_rgba(h):

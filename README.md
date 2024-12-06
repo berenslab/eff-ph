@@ -5,8 +5,8 @@ Repository accompanying the paper [Persistent homology for high-dimensional data
 
 ## Usage
 Compute the persistent homology of a toy dataset with `compute_ph.py`, of toy datasets with outliers with `compute_ph_outliers.py`
-and that of a single-cell dataset with `compute_ph_real_data.py`. Changing the dataset in the top of the script allows 
-to compute the persistent homology of different datasets.
+and that of a single-cell dataset with `compute_ph_real_data.py`. For the cycle matching experiments run the script 
+`compute_matchings.py` Changing the dataset in the top of the script allows to compute the persistent homology of different datasets.
 ```
 cd scripts
 python compute_ph.py
@@ -66,10 +66,19 @@ cd risper
 make
 ``` 
 
+Clone the repository `interval-matching` for the cycle matching experiments and compile the two C++ files:
+```
+cd ..
+git clone https://github.com/inesgare/interval-matching.git
+cd modified ripser/ripser-image-persistence-simple
+make 
+cd ../ripser-tight-representative-cycles
+make
+cd ../..
+```
 
 Clone the repository `vis_utils`
 ```
-cd ..
 git clone https://github.com/sdamrich/vis_utils.git --branch eff-ph-arxiv-v1 --single-branch
 ```
 
