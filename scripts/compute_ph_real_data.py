@@ -115,6 +115,19 @@ distances = {
         {"k": 15, "normalization": "sym", "n_evecs": 5, "weighted": False},
         {"k": 15, "normalization": "sym", "n_evecs": 10, "weighted": False},
     ],
+    "pca": [
+        {"n_components": 2, "normalize": False},
+        {"n_components": 3, "normalize": False},
+        {"n_components": 5, "normalize": False},
+        {"n_components": 10, "normalize": False},
+        {"n_components": 20, "normalize": False},
+
+        {"n_components": 2, "normalize": True},
+        {"n_components": 3, "normalize": True},
+        {"n_components": 5, "normalize": True},
+        {"n_components": 10, "normalize": True},
+        {"n_components": 20, "normalize": True},
+    ],
 }
 
 max_dim = 1  # maximum homology dimension to compute

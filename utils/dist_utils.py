@@ -325,7 +325,7 @@ def get_eff_res(x, k, corrected=True, weighted=False, disconnect=False, input_di
     return d_eff
 
 
-def get_spectral_eff_res(x, k=15, corrected=False, weighted=False):
+def get_spectral_eff_res(x, k=15, corrected=False, weighted=False, return_embd=False, input_distance="euclidean"):
     """
     Computes the effective resistance distance based on the spectral decomposition of the Laplacian
     :param x: data (n_samples, n_features)
@@ -337,7 +337,7 @@ def get_spectral_eff_res(x, k=15, corrected=False, weighted=False):
 
     # compute symmetric kNN graph
     if weighted:
-        sknn_coo = get_distance_weighted_sknn(x, k=k)
+        sknn_coo = get_distance_weighted_sknn(x, k=k, input_distance=input_distance)
     else:
         sknn_coo = get_sknn(x, k=k)
 
@@ -371,7 +371,56 @@ def get_spectral_eff_res(x, k=15, corrected=False, weighted=False):
 
     # compute pairwise distances in embedding, effective resistance is the squqre of this
     dist = squareform(pdist(embd))
+
+    if return_embd:
+        return dist**2, embd
     return dist**2
+
+
+def get_spectral_diffusion(x, k=15,  t=8, kernel="sknn", include_self=False, input_distance="euclidean", return_embd=False, return_spectrum=False):
+    """
+    computes diffusion distance on sknn graph via eigendecomposition
+    :param x:
+    :param k:
+    :param t:
+    :param kernel:
+    :param include_self:
+    :param input_distance:
+    :return:
+    """
+    if kernel == "sknn":
+        A = get_sknn(x, k=k, metric=input_distance)
+    else:
+        raise NotImplementedError("only sknn kernel implemented so far for diffusion distance")
+
+    if include_self:
+        A = A + sp.eye(A.shape[0])
+
+    L = compute_laplacian(A, normalization="sym")
+
+    eigenvalues, eigenvectors = scipy.linalg.eigh(
+        L.toarray(),
+    )
+
+    order = np.argsort(eigenvalues)[1:]
+    eigenvectors = eigenvectors[:, order]
+    eigenvalues = eigenvalues[order]
+
+    D_sqrt_inv = np.diag(A.sum(axis=0).A.flatten()**(-1/2))
+
+    decay = np.diag((1-eigenvalues)**t)
+
+    embd = D_sqrt_inv @ eigenvectors @ decay * np.sqrt((np.diag(D_sqrt_inv)**(-2)).sum())
+
+    dist = squareform(pdist(embd))
+
+    return_tuple = (dist,)
+
+    if return_embd:
+        return_tuple += (embd,)
+    if return_spectrum:
+        return_tuple += (eigenvalues, eigenvectors,)
+    return return_tuple
 
 
 def get_spectral_dpt(x, k=15, weighted=False, normalization="sym", input_distance="euclidean", use_eff_res_decay=False):
@@ -600,6 +649,28 @@ def get_potential_dist(x, k=15, t=8, kernel="sknn", eps=1e-7, include_self=True,
     P_t = P_t + eps  # same handling of small values as in PHATE
     potentials = -np.log(P_t)
     return squareform(pdist(potentials))
+
+
+def get_pca_dist(x, n_components, normalize=True):
+    """
+    computes pairwise distance in PCA space
+    :param x: data
+    :param n_components: number of components to keep
+    :param normalized: whether to normalize the PCA components
+    :return: pairwise distance matrix
+    """
+
+    if n_components > x.shape[1]:
+        n_components=x.shape[1]
+        print(f"Warning: n_components is larger than the number of features. Setting n_components to {n_components}")
+
+    pca = PCA(n_components=n_components)
+    x_pca = pca.fit_transform(x)
+
+    if normalize:
+        x_pca /= pca.singular_values_[None]
+
+    return squareform(pdist(x_pca))
 
 
 def get_umap_dist(x, k, input_distance="euclidean", sim_to_dist="neg_log", use_rho=False, include_self=False):
@@ -876,7 +947,7 @@ def get_dist(x=None, distance="euclidean", input_distance="euclidean", **kwargs)
     Wrapper for all distances.
     :param x: data
     :param distance: distance to compute, must be one of "euclidean", "cosine", "correlation", "sknn_hop", "sknn_dist",
-    "dtm", "fermat", "core", "eff_res", "deg", "spectral", "diffusion", "umap", "umap_embd", "tsne", "tsne_embd"
+    "dtm", "fermat", "core", "eff_res", "deg", "spectral", "diffusion", "umap", "umap_embd", "tsne", "tsne_embd", "pca"
     :param input_distance: input distance for all distance other than "euclidean", "cosine", "correlation"
     :param kwargs: key word arguments for the distance function
     :return: distance matrix
@@ -914,6 +985,8 @@ def get_dist(x=None, distance="euclidean", input_distance="euclidean", **kwargs)
         dist = get_tsne_dist(x, input_distance=input_distance, **kwargs)
     elif distance == "tsne_embd":
         dist = get_tsne_embd_dist(x, input_distance=input_distance, **kwargs)
+    elif distance == "pca":
+        dist = get_pca_dist(x, **kwargs)
     else:
         raise NotImplementedError(f"Distance {distance} not implemented")
     return dist
