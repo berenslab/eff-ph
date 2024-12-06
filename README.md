@@ -1,5 +1,18 @@
 # Persistent homology for high-dimensional data based on spectral methods
-Repository accompanying the paper [Persistent homology for high-dimensional data based on spectral methods](https://arxiv.org/abs/2311.03087)
+Repository accompanying the paper 
+
+**Persistent homology for high-dimensional data based on spectral methods** NeurIPS 2024 ([openreview](https://openreview.net/forum?id=ARV1gJSOzV))  
+Sebastian Damrich, Philipp Berens, Dmitry Kobak
+
+```
+@article{damrich2024persistent,
+  title={Persistent homology for high-dimensional data based on spectral methods},
+  author={Damrich, Sebastian and Berens, Philipp and Kobak, Dmitry},
+  journal={Advances in Neural Information Processing Systems},
+  volume={38},
+  year={2024}
+}
+``` 
 
 <p align="center"> <img alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
 
