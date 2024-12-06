@@ -31,15 +31,6 @@ distances = {
                {"p": 5},
                {"p": 7}
                ],
-    #"minkowski": [
-    #    {"p": 1},
-    #    {"p": 2},
-    #    {"p": 3},
-    #    {"p": 3},
-    #    {"p": 5},
-    #    {"p": 7},
-    #    {"p": np.inf}
-    #],
     "dtm": [
             {"k": 4, "p_dtm": 2, "p_radius": 1},
             {"k": 4, "p_dtm": np.inf, "p_radius": 1},
