@@ -333,3 +333,21 @@ def split_dist_str(dist_str):
         dist_str.insert(13, "\n")
     dist_str = "_".join(dist_str)
     return dist_str
+
+
+def save_pkl(obj, file_name):
+    # save an object to a pickle file
+    import pickle
+    if not file_name.endswith(".pkl"):
+        file_name += ".pkl"
+    with open(file_name, "wb") as file:
+        pickle.dump(obj, file)
+
+def load_pkl(file_name):
+    # load an object from a pickle file
+    import pickle
+    if not file_name.endswith(".pkl"):
+        file_name += ".pkl"
+    with open(file_name, "rb") as file:
+        obj = pickle.load(file)
+    return obj
