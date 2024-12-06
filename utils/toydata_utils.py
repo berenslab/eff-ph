@@ -44,7 +44,7 @@ def get_blob(n=1000):
     return np.zeros((n, 2))
 
 
-def get_torus(n, r=1.0, R=2.0, seed=0, uniform=True):
+def get_torus(n, r=1.0, R=2.0, seed=0, uniform=True, return_angles=False):
     """
     Creates n points on a torus with major radius R and minor radius r.
     :param n: number of points
@@ -90,7 +90,12 @@ def get_torus(n, r=1.0, R=2.0, seed=0, uniform=True):
     y = (R + r*np.cos(theta))*np.sin(phi)
     z = r*np.sin(theta)
 
-    return np.stack([x, y, z], axis=1)
+    torus = np.stack([x, y, z], axis=1)
+
+    if return_angles:
+        return torus, phi, theta
+    else:
+        return torus
 
 
 
