@@ -5,7 +5,7 @@ Congratulations on inheriting this project! In this branch of repo, you’ll fin
 
 I was working with both tasic and yao's dataset,  the later one is further devided into yao's smart seq, yao's 10x male and yao's 10x female, by the technique used and the sex of the experiment animals. So 4 in total. 
 
-The general procesdure is:
+The general procedure is:
 ### 1. load datasets:
 ```
 from utils.utils import get_path
