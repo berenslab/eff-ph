@@ -1,88 +1,90 @@
-# Persistent homology for high-dimensional data based on spectral methods
-Repository accompanying the paper [Persistent homology for high-dimensional data based on spectral methods](https://arxiv.org/abs/2311.03087)
+To the Next Steward of This Project,
 
-<p align="center"> <img alt="PH with Effective resistance vs Euclidean distance on Circle" src="/figures/fig_1.png">
-
-## Usage
-Compute the persistent homology of a toy dataset with `compute_ph.py`, of toy datasets with outliers with `compute_ph_outliers.py`
-and that of a single-cell dataset with `compute_ph_real_data.py`. Changing the dataset in the top of the script allows 
-to compute the persistent homology of different datasets.
-```
-cd scripts
-python compute_ph.py
-```
-
-Create the figures of the paper with the various `fig_*.ipynb` notebooks. The notebooks create the following figures:
-- Figure 1: `fig_1.ipynb`
-- Figure 2: `fig_ph.ipynb`
-- Figure 3: `fig_vary_dim_mds.ipynb`
-- Figure 4: `fig_spectral.ipynb`
-- Figure 5: `fig_circle.ipynb`
-- Figure 6: `fig_datasets.ipynb`
-- Figure 7: `fig_dims.ipynb`
-- Figure 8, 9: `fig_real_data.ipynb`
-- Figure S1: `fig_dims.ipynb`
-- Figure S3, S4: `fig_spectral.ipynb`
-- Figure S5: `fig_real_data.ipynb`
-- Figure S6, S7: `spectral.ipynb`
-- Figure S8, S9: `fig_toy_datasets.ipynb`
-- Figure S10: `fig_sc_datasets.ipynb`
-- Figure S11: `fig_sensitivity.ipynb`
-- Figure S12: `fig_outliers.ipynb`
-- Figure S13, S14: `fig_high_dim_UMAP.ipynb`
-- Figure S15: `fig_real_data.ipynb`
-- Figure S16: `fig_circle.ipynb`
-- Figure S17: `fig_datasets.ipynb`
-- Figure S18: `fig_circle.ipynb`
-- Figures S19-S26, S28: `fig_all_methods_on_toy.ipynb`
-- Figure S27: `fig_torus_high_n.ipynb`
-- Figure S29: `fig_real_data.ipynb`
-- Figure S30: `fig_Lp.ipynb`
+Congratulations on inheriting this project! In this branch of repo, you’ll find a miscellaneous collection of codes and figures, remaining exploration or tentatively discarded. This README is both to keep an record (at least for myself), and to help you understand the pipeline I was trying to build so far, and the explorative experiments I have tried. 
 
 
-## Installation
-Clone the repository
+I was working with both tasic and yao's dataset,  the later one is further devided into yao's smart seq, yao's 10x male and yao's 10x female, by the technique used and the sex of the experiment animals. So 4 in total. 
+
+The general procesdure is:
+### 1. load datasets:
 ```
-git clone https://github.com/berenslab/eff-ph.git
+from utils.utils import get_path
+from vis_utils.loaders import load_dataset
+root_path = get_path("data")
+load_dataset(root_path, DATASET_NAME)
 ```
 
-Create a conda python environment
+Here DATASET_NAME options are `["tasic_purple_lamp5", "tasic_orange", "yao_smart_purple", "yao_smart_orange"] + [f"yao_10x_female_{color}_split_{i}" for i in range(5) for color in ["orange", "purple"]] + [f"yao_10x_male_{color}_split_{i}" for i in range(10) for color in ["orange", "purple"]]`
+
+### 2. do tsne embedding
+
+see `notebook/tsne_*.ipynb`
+
+### 3. do procrustes, and save the embedding for each color and dataset, which will later be used to plot the features
+
+see `procrustes*.ipynb`
+
+### 4. compute PH
 ```
-cd eff-ph
-conda env create -f environment.yml
+scripts/compute_ph_scrna.py --dataset DATASET_NAME
+```
+(optional) if you want to check how PH looks like, or if the ph computation succeed, see `notebooks/data_*.ipynb`
+
+### 5. if DATASET_NAME is `tasic_*` or `yao_smart_*`: do `bootstrap` 25 times (I also tried `shuffle_pts`, but its not as good as `bootstrap`)
+```
+scripts/compute_ph_shuffle_before.py --methods bootstrap --dataset DATASET_NAME
 ```
 
-Install the utils:
+### 6. compute bottleneck distances
+
+6A if DATASET_NAME is `tasic_*` or `yao_smart_*`
 ```
-cd ../eff-ph
-python setup.py install
+scripts/bottleneck_dist.py --dataset DATASET_NAME --method bootstrap --ratio quarter 
+```
+6B elif `yao_10x_*`
+```
+scripts/bottleneck_dist.py --dataset DATASET_NAME --method split --ratio quarter 
 ```
 
-Clone the repository `ripser` and compile it:
-```
-cd ..
-git clone -b representative-cycles https://github.com/Ripser/ripser.git
-cd risper
-make
-``` 
+### (From this point on, there are a lot of uncertainties...) 
+
+### 7. set a threshold, and only allow few detected features that pass this threshold to enter the next step.
+
+7A For `tasic_*` or `yao_smart_*`, we were test set the maximum of the 25 bottleneck distance as the threshold. 
+
+see `thre_tasic_*.ipynb` or `thre_smart_*.ipynb`
+
+note that everything with `most_persistent` could be totally ignored, since we are not doing it anymore...
+
+7B For `10x_*`, we are are still testing the threshold. 
+
+One way is take one split's bottleneck distance with all other 14, and take the median (or other method), see `notebooks/thre_10x_orange_new_splits_bottleneck_row.ipynb`.
+
+But so far we prefer the second way, which is to construct the bottleneck distance matrix (15*15), take the upper triangle, and compute the median/std/some other metrics. So far the most strict ways are `4*std` or `2*90 percentile`, and this is also where I stopped at. (see `notebooks/thre_10x_orange_new_splits_bottleneck_matrix.ipynb` and `notebooks/thre_10x_orange_new_splits_thre_comparison.ipynb`)
+
+### 8. compute the total variation, and put features into groups
+
+In step 7, when we decide the threshold and which features we are intersted in, we also save the distributions of the cell clusters each feature passes. By computing the total variation of every two distributions, which is a score between 0 and 1, we measure how similar these two features are. 
+
+Then using complete linkage, we put features from multiple datasets into groups. We are hoping these groups can indicate something biologically significant and meanful.
+
+In `notebooks/total_variation_old_orange_thre.ipynb` and `notebooks/total_variation_old_purple_thre.ipynb`, I pigeonholed features from tasic, yao's smart seq, and a subsample of yao's 10x male datasets(10k). This result will not be used anymore, since we decided to split yao's 10x datasets and also introduce in female datasets, as you can see in the previous steps, anyhow these two notebook can give you a rough feeling of the grouping method I was trying to modify, and also an idea of what kinds of loops can repetitively appear, which could be something meaningful.
+
+In `notebooks/total_variation_10x_orange_new_splits.ipynb`, I was trying to compare the different thresholds in step 7 by clustering features which are generated by them. Note that this is limited to yao's 10x dataset.
+
+### Code and files that don't really play a role in the pipeline above, but still somewhat useful:
+
+`notebooks/data_*.ipynb`: to make sure step 4 is successful, also to have a feeling of the homology.
+
+`notebooks/test_bottleneck_*.ipynb`: test the ratio (quarter or half or etc.), and seed number (25 or more)
 
 
-Clone the repository `vis_utils`
-```
-cd ..
-git clone https://github.com/sdamrich/vis_utils.git --branch eff-ph-arxiv-v1 --single-branch
-```
+### Files that is not really useful, but still archieved here:
 
-Create the conda R environment (for loading some single-cell datasets)
-```
-cd vis_utils
-conda create -f r_env.yml
-```
+`notebooks_byproduct/total_variation_7*.ipynb`: in the past we didn't have a threshold thingy, but just take the most persistent 7 features with each hyperparameter. 
 
-Install `vis_utils`
-```
-conda activate eff-ph
-python setup.py install
-```
+`notebooks_byproduct/thre_old_*.ipynb`: we used to take only 10k cells from yao's 10x male dataset, rather than taking advantage of the whole dataset as we are doing now.
 
+`notebooks_byproduct/thre_10x_female*_resample.ipynb`: we splited both orange and purple cell group of female data into 4 parts, then resample again with different 25 seeds, and compute the bottleneck distance blabla...
 
+`scripts/compute_ph_shuffle_after.py`: it just doesn't make sense to shuffle the distance matrix, but we will tried...
