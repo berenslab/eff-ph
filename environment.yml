@@ -105,7 +105,7 @@ dependencies:
   - scikit-image=0.19.3
   - scikit-learn=1.2.1
   - scikit-misc=0.1.4
-  - scipy=1.10.0
+  - scipy=1.12.0  #was 1.10.0, changed so that sp.linalg.matrix_power works
   - seaborn=0.12.2
   - setuptools=68.0.0
   - six=1.16.0
