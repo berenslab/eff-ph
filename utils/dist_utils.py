@@ -8,9 +8,10 @@ from openTSNE.nearest_neighbors import KNNIndex
 import os
 import pickle
 from sklearn.decomposition import PCA
+import sys
+# sys.path.append('/gpfs01/berens/user/hzhang/eff-ph/vis_utils')
 from vis_utils.utils import load_dict, save_dict, kNN_dists, kNN_graph
 from vis_utils.tsne_wrapper import TSNEwrapper
-
 
 def sim_to_dense(dissim):
     """
@@ -519,13 +520,16 @@ def get_spectral_dist(x,
     return dist
 
 
-def get_diffusion_power(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean", return_D_inv=False):
+def get_diffusion_power(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean", return_D_inv=False, sparse_array = False):
     """
     computes diffusion distance on sknn graph
     :param x: data
     :param k: number of nearest neighbors
     :param t: diffusion time
     :param kernel: kernel to use, must be one of "sknn", "gaussian"
+    :param sparse_array: whether to compute the power of the diffusion matrix as a sparse array(only to test 
+    if we can also compute the distance matrix on the whole datasets, then sample then compute the PH. sparse_array
+    is option, and shouldn't effect the result of the exploration, but just to save memory.)
     :return: pairwise distance matrix
     """
     # compute the graph on which we diffuse
@@ -545,14 +549,20 @@ def get_diffusion_power(x, k=15, t=8, kernel="sknn", include_self=True, input_di
     P = P.toarray()
 
     # power it for t steps
-    P_t = np.linalg.matrix_power(P, t)
-
+    if sparse_array == False:
+        print("computing dense array") 
+        P_t = np.linalg.matrix_power(P, t)
+    elif sparse_array == True:
+        print("computing sparse array") 
+        P_t = sp.linalg.matrix_power(P, t)
+        # P_t = P_t.toarray()
+    
     if return_D_inv:
         return P_t, D_inv
     else:
         return P_t
 
-def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean"):
+def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_distance="euclidean", sparse_array = False):
     """
     computes diffusion distance on sknn graph
     :param x: data
@@ -569,7 +579,8 @@ def get_diffusion_dist(x, k=15, t=8, kernel="sknn", include_self=True, input_dis
                                      kernel=kernel,
                                      include_self=include_self,
                                      input_distance=input_distance,
-                                     return_D_inv=True)
+                                     return_D_inv=True,
+                                     sparse_array = sparse_array)
 
     # The first line is the incorrect legacy version, the second line is the correct definition. The first line uses the
     # full D_in instead of the square root inside the distance and multiplies the result with the root of the sum of the

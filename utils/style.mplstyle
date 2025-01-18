@@ -4,9 +4,7 @@ lines.markersize: 4
 
 
 #### * FONT *
-font.family : sans-serif # serif
-font.serif : Times New Roman
-font.sans-serif : Arial
+
 font.size : 6
 mathtext.fontset : dejavusans
 

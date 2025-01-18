@@ -313,7 +313,13 @@ def write_lower_tri_dissim(dense_dissim, file_name):
     # write array of distances to file in lower triangular format
     n = dense_dissim.shape[0]
     idx = np.tri(n, n, -1)
+    #hzhang
+    dir_name = os.path.dirname(file_name)
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+    #hzhang
     with open(file_name, "w") as file:
+    # with open(abs_path, "w") as file:
         lines = []
         for row_idx, dists_row in zip(idx, dense_dissim):
             lines.append(",".join(dists_row[row_idx.astype(bool)].astype("str")) + "\n")

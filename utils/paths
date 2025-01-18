@@ -1,3 +1,3 @@
-data_path data
-fig_path figures
-ripser_path ../ripser/
+data_path /gpfs01/berens/user/hzhang/eff-ph/data
+fig_path /gpfs01/berens/user/hzhang/eff-ph/figures
+ripser_path docker exec hzhang_GPU1 /gpfs01/berens/user/hzhang/

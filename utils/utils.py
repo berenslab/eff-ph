@@ -2,9 +2,11 @@ import numpy as np
 import subprocess
 import os
 import time
-from io_utils import read_ripser_result, write_lower_tri_dissim, dist_kwargs_to_str
-from toydata_utils import get_toy_data
-from dist_utils import get_dist
+import sys
+sys.path.append('/gpfs01/berens/user/hzhang/eff-ph')
+from utils.io_utils import read_ripser_result, write_lower_tri_dissim, dist_kwargs_to_str
+from utils.toydata_utils import get_toy_data
+from utils.dist_utils import get_dist
 from pkg_resources import resource_stream
 
 
@@ -91,12 +93,16 @@ def compute_ph(dist, file_name, root_dir, dataset, dim=1, delete_dists=True, ver
         file_name_dists = os.path.join(root_dir, dataset, file_name+".lower_distance_matrix")
         write_lower_tri_dissim(dist, file_name_dists)
 
+        
         # run Ripser
         if verbose:
             print(f"Running Ripser for {file_name}")
         ripser_path = get_path("ripser")
-
-        cmd = f'{ripser_path}/ripser-representatives --dim {dim} {root_dir}/{dataset}/{file_name}.lower_distance_matrix > {root_dir}/{dataset}/{file_name}_rep'
+        #test 
+        # print(f'{ripser_path}ripser-representatives')
+        
+        cmd = f'{ripser_path}ripser-representatives --dim {dim} {root_dir}/{dataset}/{file_name}.lower_distance_matrix > {root_dir}/{dataset}/{file_name}_rep'
+        # cmd = f'docker exec sdamrich_GPU1-ripser /gpfs01/berens/user/hzhang/eff-ph/ripser-representatives --dim {dim} {root_dir}/{dataset}/{file_name}.lower_distance_matrix > {root_dir}/{dataset}/{file_name}_rep'
 
         start_ph = time.time()
         subprocess.run(["bash", "-c", cmd])

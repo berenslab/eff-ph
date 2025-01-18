@@ -319,7 +319,13 @@ def get_toy_data(n, dataset, seed=0, r=1.0, d=50, **noise_kwargs):
     :param noise_kwargs: key word arguments for the noise function
     :return: noised dataset in ambient space (np.ndarray (n, d))
     """
-    if dataset == 'toy_circle':
+    if dataset == 'toy_circle_before':
+        data = get_circle(n, r=r)
+        in_d = 2
+    elif dataset == 'toy_circle_after':
+        data = get_circle(n, r=r)
+        in_d = 2
+    elif dataset == 'toy_circle':
         data = get_circle(n, r=r)
         in_d = 2
     elif dataset == 'two_circles':

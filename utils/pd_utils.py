@@ -20,6 +20,7 @@ def get_persistent_feature_id(res, m=1, dim=1, mode="additive"):
     :return: id of the m-th most persistent feature
     """
     life_times = get_life_times(res, dim=dim, mode=mode)
+    #why res is actually empty
     cycle_idx_sorted = np.argsort(life_times)[::-1]
     if m > len(cycle_idx_sorted):
         raise ValueError(f"m is larger than the number of features in the diagram, which is {len(cycle_idx_sorted)}")

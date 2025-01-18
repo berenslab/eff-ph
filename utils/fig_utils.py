@@ -1,5 +1,5 @@
-from io_utils import dist_kwargs_to_str
-from pd_utils import get_life_times
+from utils.io_utils import dist_kwargs_to_str
+from utils.pd_utils import get_life_times
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
@@ -515,7 +515,7 @@ def plot_dgm_loops(res,
         plot_only = np.arange(len(res["dgms"]), dtype=int)
     existing_colors = existing_colors + [tab10(i) for i in plot_only]
     colors = glasbey.extend_palette(existing_colors, n_loops+len(existing_colors)+2)[len(existing_colors)+1:]
-
+    
     # plot persistence diagram
     plot_diagrams(res["dgms"], show=False, ax=ax0, size=5, plot_only=plot_only, colormap=style)
 
@@ -536,8 +536,8 @@ def plot_dgm_loops(res,
         cax = ax[i // n_cols, i % n_cols] if n_rows > 1 else ax[i]
 
         # plot embd points
-        plot_scatter(cax, embd, y, s=s, alpha=1, cmap=cmap, scalebar=False)
-
+        plot_scatter(cax, embd, y, s=s, alpha=1, scalebar=False)
+        # , cmap=cmap,
         if plot_loops:
             # mark loop in persistence diagram
             ax0.scatter(*res["dgms"][1][loop_id].T, c=colors[i], s=10)
@@ -615,3 +615,78 @@ def find_best_full_dists_by_auc(outlier_scores, distance=None, distance_level=No
         return {key: find_best_full_dists_by_auc(outlier_scores[key]) for key in outlier_scores.keys()}
 
 
+def fig_loops(all_res, embd_n_mask, cell_group_name, confidence = None, save = False):
+    
+    style_file = "utils.style"
+    plt.style.use(style_file)
+    
+    n_exp = sum([len(all_res[distance]) for distance in all_res.keys()])
+    n_cols = 8
+    mid_col = np.floor(n_cols/2)
+    plot_loops = True
+
+    width_ratios = [0.75] + [1] * (n_cols-1)
+
+    fig, ax = plt.subplots(nrows=n_exp, ncols=n_cols, figsize=(8, n_exp), constrained_layout=True, width_ratios=width_ratios)
+    row = 0
+    for i, distance in enumerate(all_res.keys()):
+        for j, full_dist in enumerate(all_res[distance]):
+            res = all_res[distance][full_dist]       
+    
+            if len(res["dgms"][1]) != 0:
+                ax[row][int(mid_col)].set_title(full_dist, fontsize=5) 
+                plot_dgm_loops(res, embd_n_mask, y="k", n_loops=0, ax=ax[row], plot_only=[1], style=style_file, linewidth=1, plot_loops=plot_loops)
+            
+            colors_line = ["green", "blue"]
+            thre_order = ["90perc", "4std"]
+            if confidence is not None:
+                assert isinstance(confidence, np.ndarray)
+                life_times_loops = get_life_times(res, dim=1)
+                loop_idx_sorted = np.argsort(life_times_loops)[::-1][:7]
+                ax0 = ax[row][0]
+                gre_list = [[] for _ in range(7)]
+                for c, thresholds in enumerate(confidence):
+                    ax0.plot(ax0.get_xlim(), ax0.get_xlim() + thresholds[row], alpha=0.5, color=colors_line[c])
+                    
+                    for col in range(7):
+                        if life_times_loops[loop_idx_sorted[col]] > thresholds[row]:
+                            gre_list[col].append(thre_order[c])
+
+                for col in range(7):
+                    if gre_list[col]:
+                        ax[row][col+1].set_title(f">{gre_list[col]}")        
+            
+            for s in range(n_cols-1):
+                if "tasic" in cell_group_name and "orange" in cell_group_name:
+                    ax[row][s+1].set_ylim(30, 60)
+                elif "tasic" in cell_group_name and "purple" in cell_group_name:
+                    ax[row][s+1].set_xlim(-85, 5)
+                    ax[row][s+1].set_ylim(-25, 25)
+                elif "smart" in cell_group_name and "orange" in cell_group_name:
+                    ax[row][s+1].set_xlim(-90, -15)
+                    ax[row][s+1].set_ylim(-40, 25)
+                elif "smart" in cell_group_name and "purple" in cell_group_name:
+                    ax[row][s+1].set_xlim(-80, 0)
+                    ax[row][s+1].set_ylim(-10, 80)
+                elif "10x" in cell_group_name and "orange" in cell_group_name and "_male" in cell_group_name:
+                    ax[row][s+1].set_xlim(-65, -10)
+                    ax[row][s+1].set_ylim(20, 70)
+                elif "10x" in cell_group_name and "purple" in cell_group_name and "_male" in cell_group_name:
+                    ax[row][s+1].set_ylim(-30, 40)
+                elif "10x" in cell_group_name and "orange" in cell_group_name and "female" in cell_group_name:
+                    ax[row][s+1].set_xlim(-90, -40)
+                    ax[row][s+1].set_ylim(-10, 50)
+                elif "10x" in cell_group_name and "purple" in cell_group_name and "female" in cell_group_name:
+                    ax[row][s+1].set_xlim(-40, 10)
+                    ax[row][s+1].set_ylim(-90, -20)
+                
+                  
+            ax[row][0].legend().set_visible(False)
+            ax[row][0].set_xticks([])
+            ax[row][0].set_yticks([])
+            # ax[row][0].set_ylabel("Death")
+            row+=1
+    fig.suptitle(f"{cell_group_name}, loops and pd", fontsize = 16)       
+    plt.show()
+    if save == True:
+        fig.savefig(os.path.join(get_path("figures"), f"{cell_group_name}_loops.png"), dpi=300)
